@@ -31,7 +31,7 @@ func (c *UrlShortener) Shorten(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	_, _ = w.Write([]byte(url))
+	_, _ = w.Write([]byte(fmt.Sprintf("{\"response\": \"%s\"}", url)))
 }
 
 func (c *UrlShortener) Redirect(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +39,8 @@ func (c *UrlShortener) Redirect(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(500)
 		_, _ = w.Write([]byte("{\"response\": \"ERROR\"}"))
+		fmt.Printf("%+v\n", err)
+		return
 	}
 
 	http.Redirect(w, r, url, http.StatusSeeOther)
