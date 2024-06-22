@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/sqlc/url_mappings"
 	"github.com/raythx98/url-shortener/tools/sql_tool"
 	"log"
@@ -15,7 +16,7 @@ import (
 )
 
 type IUrlShortener interface {
-	ShortenUrl(ctx context.Context, url string) (string, error)
+	ShortenUrl(ctx context.Context, url string) (*dto.ShortenUrlResponse, error)
 	GetUrlWithShortened(ctx context.Context, shortenedUrl string) (string, error)
 }
 
@@ -38,7 +39,7 @@ func (tracer *myQueryTracer) TraceQueryStart(
 func (tracer *myQueryTracer) TraceQueryEnd(ctx context.Context, conn *pgx.Conn, data pgx.TraceQueryEndData) {
 }
 
-func (s *UrlShortener) ShortenUrl(ctx context.Context, url string) (string, error) {
+func (s *UrlShortener) ShortenUrl(ctx context.Context, url string) (*dto.ShortenUrlResponse, error) {
 	// TODO: connect on startup
 	config, err := pgxpool.ParseConfig("user=postgres password=password host=localhost port=5432 dbname=url_shortener sslmode=disable pool_max_conns=10")
 	if err != nil {
@@ -57,7 +58,7 @@ func (s *UrlShortener) ShortenUrl(ctx context.Context, url string) (string, erro
 	}
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer conn.Close()
 
@@ -65,17 +66,30 @@ func (s *UrlShortener) ShortenUrl(ctx context.Context, url string) (string, erro
 
 	expireAt := time.Now().UTC().AddDate(1, 0, 0)
 	params := url_mappings.CreateUrlMappingParams{
-		ShortenedUrl:     uuid.NewString(),
+		ShortenedUrl:     uuid.NewString()[:8],
 		Url:              url,
 		InactiveExpireAt: sql_tool.NewTime(nil),
 		MustExpireAt:     sql_tool.NewTime(&expireAt),
 	}
 	mapping, err := queries.CreateUrlMapping(ctx, params)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return mapping.ShortenedUrl, nil
+	var inactiveExpireAt, mustExpireAt *time.Time
+	if mapping.InactiveExpireAt.Valid {
+		inactiveExpireAt = &mapping.InactiveExpireAt.Time
+	}
+	if mapping.MustExpireAt.Valid {
+		mustExpireAt = &mapping.MustExpireAt.Time
+	}
+
+	return &dto.ShortenUrlResponse{
+		Url:              mapping.Url,
+		ShortenedUrl:     mapping.ShortenedUrl,
+		InactiveExpireAt: inactiveExpireAt,
+		MustExpireAt:     mustExpireAt,
+	}, nil
 }
 
 func (s *UrlShortener) GetUrlWithShortened(ctx context.Context, shortenedUrl string) (string, error) {
@@ -87,10 +101,14 @@ func (s *UrlShortener) GetUrlWithShortened(ctx context.Context, shortenedUrl str
 
 	queries := url_mappings.New(conn)
 
+	fmt.Println("shortenedUrl:", shortenedUrl)
 	mapping, err := queries.GetUrlMapping(ctx, shortenedUrl)
+	fmt.Println("mapping:", mapping)
 	if err != nil {
 		return "", err
 	}
+
+	fmt.Println("mapping:", mapping)
 
 	return mapping.Url, nil
 }

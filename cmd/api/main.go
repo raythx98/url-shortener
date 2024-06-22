@@ -22,7 +22,7 @@ func main() {
 		middleware.Log,
 	}
 
-	mux.Handle("/api/v1/url/redirect", middleware.Chain(urlShortener.Redirect, defaultMiddlewares...))
+	mux.Handle("/api/v1/url/redirect/{alias}", middleware.Chain(urlShortener.Redirect, defaultMiddlewares...))
 	mux.Handle("/api/v1/url", middleware.Chain(urlShortener.Shorten, defaultMiddlewares...))
 
 	err := http.ListenAndServe(":5051", mux)
