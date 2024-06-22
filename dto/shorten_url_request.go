@@ -1,6 +1,9 @@
 package dto
 
-import "time"
+import (
+	"github.com/raythx98/url-shortener/sqlc/url_mappings"
+	"time"
+)
 
 // ShortenUrlRequest request body for shorten url
 type ShortenUrlRequest struct {
@@ -9,4 +12,9 @@ type ShortenUrlRequest struct {
 	ShortenedUrl *string        `json:"shortened_url"`
 	CustomExpiry *time.Duration `json:"custom_expiry"`
 	IsNoExpiry   *bool          `json:"is_no_expiry"`
+}
+
+func (s *ShortenUrlRequest) BindTo(p url_mappings.CreateUrlMappingParams) url_mappings.CreateUrlMappingParams {
+	p.Url = s.Url
+	return p
 }

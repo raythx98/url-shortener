@@ -29,6 +29,10 @@ github.com/raythx98/gohelpme v0.0.0-20240602163600-e5e4748540c8 h1:UsoBidwRBK+Xz
 github.com/raythx98/gohelpme v0.0.0-20240602163600-e5e4748540c8/go.mod h1:2Ay2ZXoT4UDYXCwSSSibuhdsIzcrHjoV3eGeHTwzGew=
 github.com/raythx98/gohelpme v0.0.0-20240622172241-5e58b5ffb727 h1:QTevtMvdi6We1SLm2FPu9rsfxWO8Jd1CFZCVMSaDFs0=
 github.com/raythx98/gohelpme v0.0.0-20240622172241-5e58b5ffb727/go.mod h1:BeCcY0CQeEtySMRmgfKF77sLztButXTUNIwWXVRbHXI=
+github.com/raythx98/gohelpme v0.0.0-20240622184657-e9992801b1ed h1:3N8y5dh3LMmWqjamoQQj4l0Er/btYOHBoipYCP+Cc4s=
+github.com/raythx98/gohelpme v0.0.0-20240622184657-e9992801b1ed/go.mod h1:BeCcY0CQeEtySMRmgfKF77sLztButXTUNIwWXVRbHXI=
+github.com/raythx98/gohelpme v0.0.0-20240622185536-12f247890f0c h1:bciv/vK93Wo2Wuccs8cy513VLSJ+hFyJvp7tw3xR4IU=
+github.com/raythx98/gohelpme v0.0.0-20240622185536-12f247890f0c/go.mod h1:BeCcY0CQeEtySMRmgfKF77sLztButXTUNIwWXVRbHXI=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=

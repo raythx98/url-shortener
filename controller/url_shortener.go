@@ -2,11 +2,11 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/raythx98/gohelpme/tool/httphelper"
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/service"
+	"github.com/raythx98/url-shortener/tools/error_tool"
 	"net/http"
 	"strings"
 )
@@ -31,28 +31,22 @@ func (c *UrlShortener) Shorten(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	req, err := httphelper.GetRequestBodyAndValidate[dto.ShortenUrlRequest](ctx, r, validator.New())
 	if err != nil {
-		w.WriteHeader(500)
-		_, _ = w.Write([]byte("{\"response\": \"ERROR VALIDATION\"}"))
-		fmt.Printf("%+v\n", err)
+		error_tool.Handle(w, err)
 		return
 	}
 
-	fmt.Printf("req after unmarshal: %+v\n", req)
+	//panic("implement me") TODO: Figure out how to recover panic and continue logging
 
-	url, err := c.UrlShortenerService.ShortenUrl(ctx, req.Url)
+	url, err := c.UrlShortenerService.ShortenUrl(ctx, req)
 	if err != nil {
-		w.WriteHeader(500)
-		_, _ = w.Write([]byte("{\"response\": \"ERROR\"}"))
-		fmt.Printf("%+v\n", err)
+		error_tool.Handle(w, err)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
 	marshal, err := json.Marshal(url)
 	if err != nil {
-		w.WriteHeader(500)
-		_, _ = w.Write([]byte("{\"response\": \"ERROR MARSHALLING\"}"))
-		fmt.Printf("%+v\n", err)
+		error_tool.Handle(w, err)
 		return
 	}
 	_, _ = w.Write(marshal)
@@ -62,9 +56,7 @@ func (c *UrlShortener) Redirect(w http.ResponseWriter, r *http.Request) {
 	greetings := r.PathValue("alias")
 	url, err := c.UrlShortenerService.GetUrlWithShortened(r.Context(), greetings)
 	if url == "" || err != nil {
-		w.WriteHeader(500)
-		_, _ = w.Write([]byte("{\"response\": \"ERROR\"}"))
-		fmt.Printf("%+v\n", err)
+		error_tool.Handle(w, err)
 		return
 	}
 

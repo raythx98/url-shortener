@@ -6,7 +6,7 @@ require (
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.6.0
-	github.com/raythx98/gohelpme v0.0.0-20240622172241-5e58b5ffb727
+	github.com/raythx98/gohelpme v0.0.0-20240622184657-e9992801b1ed
 )
 
 require (

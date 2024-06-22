@@ -9,6 +9,7 @@ import (
 	"github.com/raythx98/gohelpme/middleware"
 	"github.com/raythx98/url-shortener/controller"
 	"github.com/raythx98/url-shortener/service"
+	"github.com/raythx98/url-shortener/sqlc/url_mappings"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +21,8 @@ func main() {
 	dbPool := createDb()
 	defer dbPool.Close()
 
-	urlShortenerSvc := registerServices(dbPool)
+	urlMappingRepo := registerRepos(dbPool)
+	urlShortenerSvc := registerServices(urlMappingRepo)
 	urlShortener := registerControllers(urlShortenerSvc, validate)
 
 	defaultMiddlewares := []func(next http.Handler) http.Handler{
@@ -38,14 +40,18 @@ func main() {
 	log.Fatal(err)
 }
 
+func registerRepos(pool *pgxpool.Pool) *url_mappings.Queries {
+	return url_mappings.New(pool)
+}
+
 func registerControllers(urlShortenerSvc *service.UrlShortener, v *validator.Validate) *controller.UrlShortener {
 	urlShortener := &controller.UrlShortener{UrlShortenerService: urlShortenerSvc, Validator: v}
 	func(controller.IUrlShortener) {}(urlShortener)
 	return urlShortener
 }
 
-func registerServices(pool *pgxpool.Pool) *service.UrlShortener {
-	urlShortenerSvc := &service.UrlShortener{DbPool: pool}
+func registerServices(urlMappingRepo *url_mappings.Queries) *service.UrlShortener {
+	urlShortenerSvc := &service.UrlShortener{UrlMappingRepo: urlMappingRepo}
 	func(service.IUrlShortener) {}(urlShortenerSvc)
 	return urlShortenerSvc
 }
