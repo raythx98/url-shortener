@@ -27,8 +27,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/raythx98/gohelpme v0.0.0-20240602163600-e5e4748540c8 h1:UsoBidwRBK+XzPbieCioYHUxdPk/JTLGGQbbIdF4YN4=
 github.com/raythx98/gohelpme v0.0.0-20240602163600-e5e4748540c8/go.mod h1:2Ay2ZXoT4UDYXCwSSSibuhdsIzcrHjoV3eGeHTwzGew=
-github.com/raythx98/gohelpme v0.0.0-20240622164509-6d0bba1d8ade h1:Cxns2gu1B3bp2EjaiRttAm124PV2wiBvMA17IbwteQQ=
-github.com/raythx98/gohelpme v0.0.0-20240622164509-6d0bba1d8ade/go.mod h1:2Ay2ZXoT4UDYXCwSSSibuhdsIzcrHjoV3eGeHTwzGew=
+github.com/raythx98/gohelpme v0.0.0-20240622172241-5e58b5ffb727 h1:QTevtMvdi6We1SLm2FPu9rsfxWO8Jd1CFZCVMSaDFs0=
+github.com/raythx98/gohelpme v0.0.0-20240622172241-5e58b5ffb727/go.mod h1:BeCcY0CQeEtySMRmgfKF77sLztButXTUNIwWXVRbHXI=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=

@@ -1,13 +1,12 @@
 package controller
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"github.com/raythx98/gohelpme/tool/httphelper"
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/service"
-	"io"
 	"net/http"
 	"strings"
 )
@@ -19,6 +18,7 @@ type IUrlShortener interface {
 
 type UrlShortener struct {
 	UrlShortenerService service.IUrlShortener
+	Validator           *validator.Validate
 }
 
 func New(service service.IUrlShortener) UrlShortener {
@@ -28,7 +28,8 @@ func New(service service.IUrlShortener) UrlShortener {
 }
 
 func (c *UrlShortener) Shorten(w http.ResponseWriter, r *http.Request) {
-	req, err := GetRequestBody[dto.ShortenUrlRequest](r.Context(), r)
+	ctx := r.Context()
+	req, err := httphelper.GetRequestBodyAndValidate[dto.ShortenUrlRequest](ctx, r, validator.New())
 	if err != nil {
 		w.WriteHeader(500)
 		_, _ = w.Write([]byte("{\"response\": \"ERROR VALIDATION\"}"))
@@ -38,7 +39,7 @@ func (c *UrlShortener) Shorten(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("req after unmarshal: %+v\n", req)
 
-	url, err := c.UrlShortenerService.ShortenUrl(r.Context(), req.Url)
+	url, err := c.UrlShortenerService.ShortenUrl(ctx, req.Url)
 	if err != nil {
 		w.WriteHeader(500)
 		_, _ = w.Write([]byte("{\"response\": \"ERROR\"}"))
@@ -72,20 +73,4 @@ func (c *UrlShortener) Redirect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, url, http.StatusSeeOther)
-}
-
-func GetRequestBody[T any](_ context.Context, r *http.Request) (T, error) {
-	var body T
-	requestByte, err := io.ReadAll(r.Body)
-	if err != nil {
-		return body, fmt.Errorf("failed to read request body: %w", err)
-	}
-	if err := json.Unmarshal(requestByte, &body); err != nil {
-		return body, err
-	}
-	if err := validator.New().Struct(body); err != nil {
-		return body, err
-	}
-
-	return body, nil
 }
