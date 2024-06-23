@@ -18,6 +18,12 @@ type UrlShortener struct {
 	UrlMappingRepo *url_mappings.Queries
 }
 
+func New(urlMappingRepo *url_mappings.Queries) *UrlShortener {
+	return &UrlShortener{
+		UrlMappingRepo: urlMappingRepo,
+	}
+}
+
 func (s *UrlShortener) ShortenUrl(ctx context.Context, req dto.ShortenUrlRequest) (*dto.ShortenUrlResponse, error) {
 	expireAt := time.Now().UTC().AddDate(1, 0, 0)
 

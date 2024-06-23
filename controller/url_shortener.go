@@ -21,48 +21,61 @@ type UrlShortener struct {
 	Validator           *validator.Validate
 }
 
-func New(service service.IUrlShortener) UrlShortener {
-	return UrlShortener{
+func New(service service.IUrlShortener, validate *validator.Validate) *UrlShortener {
+	return &UrlShortener{
 		UrlShortenerService: service,
+		Validator:           validate,
 	}
 }
 
 func (c *UrlShortener) Shorten(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	req, err := httphelper.GetRequestBodyAndValidate[dto.ShortenUrlRequest](ctx, r, validator.New())
-	if err != nil {
-		error_tool.Handle(w, err)
-		return
+	execute := func() error {
+		ctx := r.Context()
+
+		req, err := httphelper.GetRequestBodyAndValidate[dto.ShortenUrlRequest](ctx, r, validator.New())
+		if err != nil {
+			return err
+		}
+
+		//panic("implement me") TODO: Figure out how to recover panic and continue logging
+
+		url, err := c.UrlShortenerService.ShortenUrl(ctx, req)
+		if err != nil {
+			return err
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		marshal, err := json.Marshal(url)
+		if err != nil {
+			return err
+		}
+
+		_, err = w.Write(marshal)
+		return err
 	}
 
-	//panic("implement me") TODO: Figure out how to recover panic and continue logging
-
-	url, err := c.UrlShortenerService.ShortenUrl(ctx, req)
-	if err != nil {
-		error_tool.Handle(w, err)
-		return
+	if err := execute(); err != nil {
+		error_tool.Handle(w, err) // TODO: Can we write a middleware to handle error in a more elegant way?
 	}
-
-	w.WriteHeader(http.StatusCreated)
-	marshal, err := json.Marshal(url)
-	if err != nil {
-		error_tool.Handle(w, err)
-		return
-	}
-	_, _ = w.Write(marshal)
 }
 
 func (c *UrlShortener) Redirect(w http.ResponseWriter, r *http.Request) {
-	greetings := r.PathValue("alias")
-	url, err := c.UrlShortenerService.GetUrlWithShortened(r.Context(), greetings)
-	if url == "" || err != nil {
-		error_tool.Handle(w, err)
-		return
+	execute := func() error {
+		greetings := r.PathValue("alias")
+		url, err := c.UrlShortenerService.GetUrlWithShortened(r.Context(), greetings)
+		if url == "" || err != nil {
+			return err
+		}
+
+		if !strings.Contains(url, "://") { // TODO: Fix protocol not being added to full url
+			url = "http://" + url
+		}
+
+		http.Redirect(w, r, url, http.StatusSeeOther)
+		return nil
 	}
 
-	if !strings.Contains(url, "://") { // TODO: Fix protocol not being added to full url
-		url = "http://" + url
+	if err := execute(); err != nil {
+		error_tool.Handle(w, err) // TODO: Can we write a middleware to handle error in a more elegant way?
 	}
-
-	http.Redirect(w, r, url, http.StatusSeeOther)
 }

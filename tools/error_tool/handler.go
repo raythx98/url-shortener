@@ -36,10 +36,10 @@ func Handle(w http.ResponseWriter, err error) {
 }
 
 func HandleAppError(w http.ResponseWriter, appError *AppError) {
-	marshal, err := json.Marshal(dto.ErrorResponse{
-		Message: appError.message,
-		Code:    appError.code,
-		Data:    appError.err.Error(),
+	marshal, err := json.Marshal(&dto.ErrorResponse{
+		Message: appError.Message(),
+		Code:    appError.Code(),
+		Data:    appError.Error(),
 	})
 	if err != nil {
 		HandleInternalServerError(w, err)
@@ -51,11 +51,7 @@ func HandleAppError(w http.ResponseWriter, appError *AppError) {
 }
 
 func HandleInvalidValidationError(w http.ResponseWriter, validationErr *validator.InvalidValidationError) {
-	marshal, err := json.Marshal(dto.ErrorResponse{
-		Message: "Validation Error",
-		Code:    422,
-		Data:    validationErr.Error(),
-	})
+	marshal, err := json.Marshal(dto.NewValidationError(validationErr))
 	if err != nil {
 		HandleInternalServerError(w, err)
 		return
@@ -66,11 +62,7 @@ func HandleInvalidValidationError(w http.ResponseWriter, validationErr *validato
 }
 
 func HandleValidationError(w http.ResponseWriter, validationErr validator.ValidationErrors) {
-	marshal, err := json.Marshal(dto.ErrorResponse{
-		Message: "Validation Error",
-		Code:    422,
-		Data:    validationErr.Error(),
-	})
+	marshal, err := json.Marshal(dto.NewValidationError(validationErr))
 	if err != nil {
 		HandleInternalServerError(w, err)
 		return
@@ -83,11 +75,7 @@ func HandleValidationError(w http.ResponseWriter, validationErr validator.Valida
 func HandleInternalServerError(w http.ResponseWriter, err error) {
 	w.WriteHeader(http.StatusInternalServerError)
 
-	marshal, err := json.Marshal(dto.ErrorResponse{
-		Message: "Internal Server Error",
-		Code:    500,
-		Data:    err.Error(),
-	})
+	marshal, err := json.Marshal(dto.NewInternalServerError(err))
 	if err != nil {
 		_, _ = w.Write([]byte("Internal Server Error"))
 	}

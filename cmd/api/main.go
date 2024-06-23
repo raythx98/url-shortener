@@ -45,19 +45,21 @@ func registerRepos(pool *pgxpool.Pool) *url_mappings.Queries {
 }
 
 func registerControllers(urlShortenerSvc *service.UrlShortener, v *validator.Validate) *controller.UrlShortener {
-	urlShortener := &controller.UrlShortener{UrlShortenerService: urlShortenerSvc, Validator: v}
+	urlShortener := controller.New(urlShortenerSvc, v)
 	func(controller.IUrlShortener) {}(urlShortener)
 	return urlShortener
 }
 
 func registerServices(urlMappingRepo *url_mappings.Queries) *service.UrlShortener {
-	urlShortenerSvc := &service.UrlShortener{UrlMappingRepo: urlMappingRepo}
+	urlShortenerSvc := service.New(urlMappingRepo)
 	func(service.IUrlShortener) {}(urlShortenerSvc)
 	return urlShortenerSvc
 }
 
 func createDb() *pgxpool.Pool {
-	config, err := pgxpool.ParseConfig("user=postgres password=password host=localhost port=5432 dbname=url_shortener sslmode=disable pool_max_conns=10")
+	connString := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable pool_max_conns=10",
+		"postgres", "password", "localhost", "5432", "url_shortener")
+	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to parse config: %v\n", err)
 		os.Exit(1)
