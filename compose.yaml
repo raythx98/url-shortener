@@ -1,0 +1,17 @@
+services:
+  app:
+    environment:
+      - DEBUG=true
+    build: .
+    ports:
+      - "5051:5051"
+    env_file:
+      - ".envrc"
+  db:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: url_shortener

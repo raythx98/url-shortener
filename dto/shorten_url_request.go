@@ -1,8 +1,9 @@
 package dto
 
 import (
-	"github.com/raythx98/url-shortener/sqlc/url_mappings"
 	"time"
+
+	"github.com/raythx98/url-shortener/sqlc/url_mappings"
 )
 
 // ShortenUrlRequest request body for shorten url

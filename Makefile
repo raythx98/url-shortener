@@ -1,5 +1,3 @@
-#export POSTGRESQL_URL='postgres://postgres:password@localhost:5432/example?sslmode=disable'
-
 createMigration:
 	migrate create -ext sql -dir migrations/url_mappings -seq init_table
 
@@ -10,4 +8,5 @@ runMigration:
 sqlcGenerate:
 	sqlc generate --file url_mappings.yaml
 
-#go get "github.com/raythx98/gohelpme"
+run:
+	go run ./cmd/api/main.go

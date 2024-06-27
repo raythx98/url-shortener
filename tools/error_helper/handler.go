@@ -1,12 +1,14 @@
-package error_tool
+package error_helper
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"github.com/raythx98/url-shortener/dto"
 	"net/http"
+
+	"github.com/raythx98/url-shortener/dto"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func Handle(w http.ResponseWriter, err error) {
@@ -18,14 +20,12 @@ func Handle(w http.ResponseWriter, err error) {
 		return
 	}
 
-	//var invalidValidationErr *validator.InvalidValidationError
 	var invalidValidationErr *validator.InvalidValidationError
 	if errors.As(err, &invalidValidationErr) {
 		HandleInvalidValidationError(w, invalidValidationErr)
 		return
 	}
 
-	//var validationErr
 	var validationErr validator.ValidationErrors
 	if errors.As(err, &validationErr) {
 		HandleValidationError(w, validationErr)

@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
-	"github.com/google/uuid"
+	"time"
+
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/sqlc/url_mappings"
-	"github.com/raythx98/url-shortener/tools/sql_tool"
-	"time"
+	"github.com/raythx98/url-shortener/tools/pg_helper"
+
+	"github.com/google/uuid"
 )
 
 type IUrlShortener interface {
@@ -29,8 +31,8 @@ func (s *UrlShortener) ShortenUrl(ctx context.Context, req dto.ShortenUrlRequest
 
 	params := req.BindTo(url_mappings.CreateUrlMappingParams{
 		ShortenedUrl:     uuid.NewString()[:8],
-		InactiveExpireAt: sql_tool.NewTime(nil),
-		MustExpireAt:     sql_tool.NewTime(&expireAt),
+		InactiveExpireAt: pg_helper.NewTime(nil),
+		MustExpireAt:     pg_helper.NewTime(&expireAt),
 	})
 
 	mapping, err := s.UrlMappingRepo.CreateUrlMapping(ctx, params)

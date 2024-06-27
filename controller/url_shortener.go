@@ -2,13 +2,16 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/go-playground/validator/v10"
-	"github.com/raythx98/gohelpme/tool/httphelper"
-	"github.com/raythx98/url-shortener/dto"
-	"github.com/raythx98/url-shortener/service"
-	"github.com/raythx98/url-shortener/tools/error_tool"
 	"net/http"
 	"strings"
+
+	"github.com/raythx98/url-shortener/dto"
+	"github.com/raythx98/url-shortener/service"
+	"github.com/raythx98/url-shortener/tools/error_helper"
+
+	"github.com/raythx98/gohelpme/tool/httphelper"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type IUrlShortener interface {
@@ -55,7 +58,7 @@ func (c *UrlShortener) Shorten(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := execute(); err != nil {
-		error_tool.Handle(w, err) // TODO: Can we write a middleware to handle error in a more elegant way?
+		error_helper.Handle(w, err) // TODO: Can we write a middleware to handle error in a more elegant way?
 	}
 }
 
@@ -76,6 +79,6 @@ func (c *UrlShortener) Redirect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := execute(); err != nil {
-		error_tool.Handle(w, err) // TODO: Can we write a middleware to handle error in a more elegant way?
+		error_helper.Handle(w, err) // TODO: Can we write a middleware to handle error in a more elegant way?
 	}
 }

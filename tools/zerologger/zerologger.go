@@ -2,11 +2,13 @@ package zerologger
 
 import (
 	"context"
+	"os"
+
 	"github.com/raythx98/gohelpme/tool/logger"
 	"github.com/raythx98/gohelpme/tool/reqctx"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"os"
 )
 
 type Logger struct {

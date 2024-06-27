@@ -1,8 +1,9 @@
-package sql_tool
+package pg_helper
 
 import (
-	"github.com/jackc/pgx/v5/pgtype"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func NewTime(newTime *time.Time) pgtype.Timestamp {
