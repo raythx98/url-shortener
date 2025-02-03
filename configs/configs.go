@@ -8,7 +8,7 @@ type Specification struct {
 	DbUsername    string `required:"true"`
 	DbPassword    string `required:"true"`
 	DbHost        string `required:"true"`
-	DbPort        string `required:"true"`
+	DbPort        int    `required:"true"`
 	DbDefaultName string `required:"true"`
 }
 
@@ -30,7 +30,7 @@ func (s *Specification) GetDbHost() string {
 	return s.DbHost
 }
 
-func (s *Specification) GetDbPort() string {
+func (s *Specification) GetDbPort() int {
 	return s.DbPort
 }
 

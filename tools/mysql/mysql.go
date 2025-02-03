@@ -15,7 +15,7 @@ import (
 )
 
 func NewPool(ctx context.Context, cfg configs.IConfig, log logger.ILogger) *pgxpool.Pool {
-	connString := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=disable pool_max_conns=10",
+	connString := fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=%s sslmode=disable pool_max_conns=10",
 		cfg.GetDbUsername(), cfg.GetDbPassword(), cfg.GetDbHost(), cfg.GetDbPort(), cfg.GetDbDefaultName())
 	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {

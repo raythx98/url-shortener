@@ -2,7 +2,7 @@ package dto
 
 import (
 	"time"
-
+	
 	"github.com/raythx98/url-shortener/sqlc/url_mappings"
 )
 

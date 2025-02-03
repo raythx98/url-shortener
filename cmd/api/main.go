@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/raythx98/url-shortener/configs"
 	"net/http"
-	"os"
 
+	"github.com/raythx98/url-shortener/configs"
 	"github.com/raythx98/url-shortener/controller"
+	_ "github.com/raythx98/url-shortener/docs"
 	"github.com/raythx98/url-shortener/service"
 	"github.com/raythx98/url-shortener/sqlc/url_mappings"
 	"github.com/raythx98/url-shortener/tools/mysql"
@@ -18,18 +18,28 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
+// @title           URL Shortener Server
+// @version         1.0
+
+// @contact.name   Ray Toh
+// @contact.url    https://www.raythx.com
+// @contact.email  raythx98@gmail.com
+
+// @host      localhost:5051
+// @BasePath  /api/v1
 func main() {
 	validate := createTools()
 
 	config := configs.Load()
 
 	log := zerologger.New(true)
-	middleware.RegisterLogger(log)
 
 	ctx := context.Background()
-	printConfigs(ctx, log, config)
+
+	log.Debug(ctx, "configs loaded", logger.WithField("config", config))
 
 	dbPool := mysql.NewPool(ctx, config, log)
 	defer dbPool.Close()
@@ -39,24 +49,27 @@ func main() {
 	urlShortener := registerControllers(urlShortenerSvc, validate)
 
 	defaultMiddlewares := []func(next http.Handler) http.Handler{
+		middleware.CORS,
 		middleware.JsonResponse,
 		middleware.AddRequestId,
-		middleware.Log,
+		middleware.Log(log),
+		middleware.Recoverer(log),
+		middleware.ErrorHandler,
 	}
 
 	mux := http.NewServeMux()
-
 	mux.Handle("/api/v1/url/redirect/{alias}", middleware.Chain(urlShortener.Redirect, defaultMiddlewares...))
 	mux.Handle("/api/v1/url", middleware.Chain(urlShortener.Shorten, defaultMiddlewares...))
+	mux.Handle("/api/v1/test", middleware.Chain(urlShortener.Test, defaultMiddlewares...))
+	mux.Handle("/swagger/*", httpSwagger.Handler(httpSwagger.URL(
+		fmt.Sprintf("http://localhost:%d/swagger/doc.json", config.ServerPort))))
 
-	_ = http.ListenAndServe(":5051", mux)
-	os.Exit(1)
-	//log.Fatal(err)
-}
+	err := http.ListenAndServe(fmt.Sprintf(":%d", config.ServerPort), mux)
+	if err != nil {
+		log.Fatal(ctx, "failed to listen and serve", logger.WithError(err))
+	}
 
-func printConfigs(ctx context.Context, log logger.ILogger, s *configs.Specification) {
-	format := "Debug: %v\nServerPort: %d\nDBUser: %s\nDBPassword: %s\nDbHost: %s\nDbPort: %s\nDbDefaultDb: %s\n"
-	fmt.Printf(format, s.Debug, s.ServerPort, s.DbUsername, s.DbPassword, s.DbHost, s.DbPort, s.DbDefaultName)
+	log.Info(ctx, "Server stopped")
 }
 
 func registerRepos(pool *pgxpool.Pool) *url_mappings.Queries {
