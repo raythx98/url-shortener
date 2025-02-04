@@ -4,10 +4,11 @@ go 1.22.3
 
 require (
 	github.com/go-playground/validator/v10 v10.24.0
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/raythx98/gohelpme v0.0.0-20250203191025-2a2fb3723f02
+	github.com/raythx98/gohelpme v0.0.0-20250204142229-6bf38ef5e1a0
 	github.com/rs/zerolog v1.33.0
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.4

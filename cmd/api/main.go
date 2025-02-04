@@ -55,12 +55,44 @@ func main() {
 		middleware.Log(log),
 		middleware.Recoverer(log),
 		middleware.ErrorHandler,
+		middleware.Auth(middleware.Access),
+	}
+
+	defaultMiddlewaresRefresh := []func(next http.Handler) http.Handler{
+		middleware.CORS,
+		middleware.JsonResponse,
+		middleware.AddRequestId,
+		middleware.Log(log),
+		middleware.Recoverer(log),
+		middleware.ErrorHandler,
+		middleware.Auth(middleware.Refresh),
+	}
+
+	defaultMiddlewaresBasic := []func(next http.Handler) http.Handler{
+		middleware.CORS,
+		middleware.JsonResponse,
+		middleware.AddRequestId,
+		middleware.Log(log),
+		middleware.Recoverer(log),
+		middleware.ErrorHandler,
+		middleware.Auth(middleware.Basic),
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("/api/v1/url/redirect/{alias}", middleware.Chain(urlShortener.Redirect, defaultMiddlewares...))
+
+	mux.Handle("/api/auth/v1/register", middleware.Chain(urlShortener.Register, defaultMiddlewaresBasic...))
+	mux.Handle("/api/auth/v1/login", middleware.Chain(urlShortener.Login, defaultMiddlewaresBasic...))
+	mux.Handle("/api/auth/v1/refresh", middleware.Chain(urlShortener.Refresh, defaultMiddlewaresRefresh...))
+	mux.Handle("/api/auth/v1/logout", middleware.Chain(urlShortener.Logout, defaultMiddlewares...))
+
+	mux.Handle("/api/users/v1", middleware.Chain(urlShortener.Profile, defaultMiddlewares...))
+
+	mux.Handle("/api/urls/v1/{id}", middleware.Chain(urlShortener.Url, defaultMiddlewares...))
+	mux.Handle("/api/urls/v1", middleware.Chain(urlShortener.Urls, defaultMiddlewares...))
+	mux.Handle("/api/urls/v1/redirect/{alias}", middleware.Chain(urlShortener.Redirect, defaultMiddlewares...))
+
+	mux.Handle("/api/v1/url/redirect/{alias}", middleware.Chain(urlShortener.RedirectV2, defaultMiddlewares...))
 	mux.Handle("/api/v1/url", middleware.Chain(urlShortener.Shorten, defaultMiddlewares...))
-	mux.Handle("/api/v1/test", middleware.Chain(urlShortener.Test, defaultMiddlewares...))
 	mux.Handle("/swagger/*", httpSwagger.Handler(httpSwagger.URL(
 		fmt.Sprintf("http://localhost:%d/swagger/doc.json", config.ServerPort))))
 
