@@ -180,7 +180,8 @@ func (c *UrlShortener) CreateUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type resp struct {
-		Id int64 `json:"id"`
+		Id       int64  `json:"id"`
+		ShortUrl string `json:"short_url"`
 	}
 
 	ctx := r.Context()
@@ -193,7 +194,8 @@ func (c *UrlShortener) CreateUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	marshal, err := json.Marshal(resp{Id: 1001})
+	//marshal, err := json.Marshal(resp{Id: 1001, ShortUrl: "ABC123"})
+	marshal, err := json.Marshal(resp{Id: 1001, ShortUrl: "ABC123ABC123ABC123ABC123"})
 	if err != nil {
 		reqCtx.SetError(err)
 		return
