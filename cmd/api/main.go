@@ -48,7 +48,7 @@ func main() {
 	urlShortenerSvc := registerServices(urlMappingRepo)
 	urlShortener := registerControllers(urlShortenerSvc, validate)
 
-	defaultMiddlewares := []func(next http.Handler) http.Handler{
+	defaultMiddlewares := []func(next http.HandlerFunc) http.HandlerFunc{
 		middleware.CORS,
 		middleware.JsonResponse,
 		middleware.AddRequestId,
@@ -57,7 +57,7 @@ func main() {
 		middleware.ErrorHandler,
 	}
 
-	defaultMiddlewaresAccess := []func(next http.Handler) http.Handler{
+	defaultMiddlewaresAccess := []func(next http.HandlerFunc) http.HandlerFunc{
 		middleware.CORS,
 		middleware.JsonResponse,
 		middleware.AddRequestId,
@@ -67,7 +67,7 @@ func main() {
 		middleware.Auth(middleware.Access),
 	}
 
-	defaultMiddlewaresRefresh := []func(next http.Handler) http.Handler{
+	defaultMiddlewaresRefresh := []func(next http.HandlerFunc) http.HandlerFunc{
 		middleware.CORS,
 		middleware.JsonResponse,
 		middleware.AddRequestId,
@@ -77,7 +77,7 @@ func main() {
 		middleware.Auth(middleware.Refresh),
 	}
 
-	defaultMiddlewaresBasic := []func(next http.Handler) http.Handler{
+	defaultMiddlewaresBasic := []func(next http.HandlerFunc) http.HandlerFunc{
 		middleware.CORS,
 		middleware.JsonResponse,
 		middleware.AddRequestId,
@@ -89,21 +89,25 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/api/auth/v1/register", middleware.Chain(urlShortener.Register, defaultMiddlewaresBasic...))
-	mux.Handle("/api/auth/v1/login", middleware.Chain(urlShortener.Login, defaultMiddlewaresBasic...))
-	mux.Handle("/api/auth/v1/refresh", middleware.Chain(urlShortener.Refresh, defaultMiddlewaresRefresh...))
-	mux.Handle("/api/auth/v1/logout", middleware.Chain(urlShortener.Logout, defaultMiddlewaresAccess...))
+	mux.HandleFunc("OPTIONS /api/", middleware.Chain(urlShortener.Register, middleware.CORS))
 
-	mux.Handle("/api/users/v1", middleware.Chain(urlShortener.Profile, defaultMiddlewaresAccess...))
+	mux.HandleFunc("POST /api/auth/v1/register", middleware.Chain(urlShortener.Register, defaultMiddlewaresBasic...))
+	mux.HandleFunc("POST /api/auth/v1/login", middleware.Chain(urlShortener.Login, defaultMiddlewaresBasic...))
+	mux.HandleFunc("POST /api/auth/v1/refresh", middleware.Chain(urlShortener.Refresh, defaultMiddlewaresRefresh...))
+	mux.HandleFunc("POST /api/auth/v1/logout", middleware.Chain(urlShortener.Logout, defaultMiddlewaresAccess...))
 
-	mux.Handle("/api/urls/v1/{id}", middleware.Chain(urlShortener.Url, defaultMiddlewaresAccess...))
-	mux.Handle("/api/urls/v1", middleware.Chain(urlShortener.Urls, defaultMiddlewares...))
-	// TODO Redirect should not block anonymous user
-	mux.Handle("/api/urls/v1/redirect/{alias}", middleware.Chain(urlShortener.Redirect, defaultMiddlewaresAccess...))
+	mux.HandleFunc("GET /api/users/v1", middleware.Chain(urlShortener.Profile, defaultMiddlewaresAccess...))
+
+	mux.HandleFunc("GET /api/urls/v1/{id}", middleware.Chain(urlShortener.GetUrl, defaultMiddlewaresAccess...))
+	mux.HandleFunc("DELETE /api/urls/v1/{id}", middleware.Chain(urlShortener.DeleteUrl, defaultMiddlewaresAccess...))
+	mux.HandleFunc("POST /api/urls/v1", middleware.Chain(urlShortener.CreateUrl, defaultMiddlewares...))
+	mux.HandleFunc("GET /api/urls/v1", middleware.Chain(urlShortener.GetUrls, defaultMiddlewares...))
+
+	mux.HandleFunc("POST /api/urls/v1/redirect/{alias}", middleware.Chain(urlShortener.Redirect, defaultMiddlewares...))
 
 	//mux.Handle("/api/v1/url/redirect/{alias}", middleware.Chain(urlShortener.RedirectV2, defaultMiddlewaresAccess...))
 	//mux.Handle("/api/v1/url", middleware.Chain(urlShortener.Shorten, defaultMiddlewaresAccess...))
-	mux.Handle("/swagger/*", httpSwagger.Handler(httpSwagger.URL(
+	mux.HandleFunc("/swagger/*", httpSwagger.Handler(httpSwagger.URL(
 		fmt.Sprintf("http://localhost:%d/swagger/doc.json", config.ServerPort))))
 
 	err := http.ListenAndServe(fmt.Sprintf(":%d", config.ServerPort), mux)
