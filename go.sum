@@ -59,6 +59,12 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/raythx98/gohelpme v0.0.0-20250204142229-6bf38ef5e1a0 h1:uL2+PYDZrlkOrulZsaHOMDUtpQUjK3wage7qeQ2gg6Q=
 github.com/raythx98/gohelpme v0.0.0-20250204142229-6bf38ef5e1a0/go.mod h1:nar+Gm/Rq336ZigwpNLw0GX1UA6zLdvfEceAGLEHAOQ=
+github.com/raythx98/gohelpme v0.0.0-20250213174648-7a6c844382db h1:N21zy4An9WaKJ4VyrkcDyfiNwvYkmhGNKpwKfFzFHDE=
+github.com/raythx98/gohelpme v0.0.0-20250213174648-7a6c844382db/go.mod h1:nar+Gm/Rq336ZigwpNLw0GX1UA6zLdvfEceAGLEHAOQ=
+github.com/raythx98/gohelpme v0.0.0-20250213175445-5c2c99133f7c h1:tQDJd4t8O58/YH7vizO0oz5Qq2Atq/Ptz6clVWK4yJ4=
+github.com/raythx98/gohelpme v0.0.0-20250213175445-5c2c99133f7c/go.mod h1:nar+Gm/Rq336ZigwpNLw0GX1UA6zLdvfEceAGLEHAOQ=
+github.com/raythx98/gohelpme v0.0.0-20250213175713-99d00f666fef h1:yAzbj/o/BAtZBMBwlhr/hwBIQeZUU7S0OELlk3ppkds=
+github.com/raythx98/gohelpme v0.0.0-20250213175713-99d00f666fef/go.mod h1:nar+Gm/Rq336ZigwpNLw0GX1UA6zLdvfEceAGLEHAOQ=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/rs/xid v1.5.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=

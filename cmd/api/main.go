@@ -9,7 +9,7 @@ import (
 	"github.com/raythx98/url-shortener/controller"
 	_ "github.com/raythx98/url-shortener/docs"
 	"github.com/raythx98/url-shortener/service"
-	"github.com/raythx98/url-shortener/sqlc/url_mappings"
+	"github.com/raythx98/url-shortener/sqlc/db"
 	"github.com/raythx98/url-shortener/tools/mysql"
 	"github.com/raythx98/url-shortener/tools/zerologger"
 
@@ -98,10 +98,11 @@ func main() {
 
 	mux.Handle("/api/urls/v1/{id}", middleware.Chain(urlShortener.Url, defaultMiddlewaresAccess...))
 	mux.Handle("/api/urls/v1", middleware.Chain(urlShortener.Urls, defaultMiddlewares...))
+	// TODO Redirect should not block anonymous user
 	mux.Handle("/api/urls/v1/redirect/{alias}", middleware.Chain(urlShortener.Redirect, defaultMiddlewaresAccess...))
 
-	mux.Handle("/api/v1/url/redirect/{alias}", middleware.Chain(urlShortener.RedirectV2, defaultMiddlewaresAccess...))
-	mux.Handle("/api/v1/url", middleware.Chain(urlShortener.Shorten, defaultMiddlewaresAccess...))
+	//mux.Handle("/api/v1/url/redirect/{alias}", middleware.Chain(urlShortener.RedirectV2, defaultMiddlewaresAccess...))
+	//mux.Handle("/api/v1/url", middleware.Chain(urlShortener.Shorten, defaultMiddlewaresAccess...))
 	mux.Handle("/swagger/*", httpSwagger.Handler(httpSwagger.URL(
 		fmt.Sprintf("http://localhost:%d/swagger/doc.json", config.ServerPort))))
 
@@ -113,8 +114,8 @@ func main() {
 	log.Info(ctx, "Server stopped")
 }
 
-func registerRepos(pool *pgxpool.Pool) *url_mappings.Queries {
-	return url_mappings.New(pool)
+func registerRepos(pool *pgxpool.Pool) *db.Queries {
+	return db.New(pool)
 }
 
 func registerControllers(urlShortenerSvc *service.UrlShortener, v *validator.Validate) *controller.UrlShortener {
@@ -123,7 +124,7 @@ func registerControllers(urlShortenerSvc *service.UrlShortener, v *validator.Val
 	return urlShortener
 }
 
-func registerServices(urlMappingRepo *url_mappings.Queries) *service.UrlShortener {
+func registerServices(urlMappingRepo *db.Queries) *service.UrlShortener {
 	urlShortenerSvc := service.New(urlMappingRepo)
 	func(service.IUrlShortener) {}(urlShortenerSvc)
 	return urlShortenerSvc
