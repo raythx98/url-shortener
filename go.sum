@@ -20,8 +20,8 @@ github.com/go-playground/locales v0.14.1 h1:EWaQ/wswjilfKLTECiXz7Rh+3BjFhfDFKv/o
 github.com/go-playground/locales v0.14.1/go.mod h1:hxrqLVvrK65+Rwrd5Fc6F2O76J/NuW9t0sjnWqG1slY=
 github.com/go-playground/universal-translator v0.18.1 h1:Bcnm0ZwsGyWbCzImXv+pAJnYK9S473LQFuzCbDbfSFY=
 github.com/go-playground/universal-translator v0.18.1/go.mod h1:xekY+UJKNuX9WP91TpwSH2VMlDf28Uj24BCp08ZFTUY=
-github.com/go-playground/validator/v10 v10.24.0 h1:KHQckvo8G6hlWnrPX4NJJ+aBfWNAE/HH+qdL2cBpCmg=
-github.com/go-playground/validator/v10 v10.24.0/go.mod h1:GGzBIJMuE98Ic/kJsBXbz1x/7cByt++cQ+YOuDM5wus=
+github.com/go-playground/validator/v10 v10.25.0 h1:5Dh7cjvzR7BRZadnsVOzPhWsrwUr0nmsZJxEAnFLNO8=
+github.com/go-playground/validator/v10 v10.25.0/go.mod h1:GGzBIJMuE98Ic/kJsBXbz1x/7cByt++cQ+YOuDM5wus=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/golang-jwt/jwt/v5 v5.2.1 h1:OuVbFODueb089Lh128TAcimifWaLhJwVflnrgM17wHk=
 github.com/golang-jwt/jwt/v5 v5.2.1/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
@@ -57,14 +57,6 @@ github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/raythx98/gohelpme v0.0.0-20250204142229-6bf38ef5e1a0 h1:uL2+PYDZrlkOrulZsaHOMDUtpQUjK3wage7qeQ2gg6Q=
-github.com/raythx98/gohelpme v0.0.0-20250204142229-6bf38ef5e1a0/go.mod h1:nar+Gm/Rq336ZigwpNLw0GX1UA6zLdvfEceAGLEHAOQ=
-github.com/raythx98/gohelpme v0.0.0-20250213174648-7a6c844382db h1:N21zy4An9WaKJ4VyrkcDyfiNwvYkmhGNKpwKfFzFHDE=
-github.com/raythx98/gohelpme v0.0.0-20250213174648-7a6c844382db/go.mod h1:nar+Gm/Rq336ZigwpNLw0GX1UA6zLdvfEceAGLEHAOQ=
-github.com/raythx98/gohelpme v0.0.0-20250213175445-5c2c99133f7c h1:tQDJd4t8O58/YH7vizO0oz5Qq2Atq/Ptz6clVWK4yJ4=
-github.com/raythx98/gohelpme v0.0.0-20250213175445-5c2c99133f7c/go.mod h1:nar+Gm/Rq336ZigwpNLw0GX1UA6zLdvfEceAGLEHAOQ=
-github.com/raythx98/gohelpme v0.0.0-20250213175713-99d00f666fef h1:yAzbj/o/BAtZBMBwlhr/hwBIQeZUU7S0OELlk3ppkds=
-github.com/raythx98/gohelpme v0.0.0-20250213175713-99d00f666fef/go.mod h1:nar+Gm/Rq336ZigwpNLw0GX1UA6zLdvfEceAGLEHAOQ=
 github.com/raythx98/gohelpme v0.0.0-20250213184848-12a8fc0663f0 h1:RcxESMsGEvTXnwaMCGEY4s/qUMYzNn5Ot6e1/UEyFbU=
 github.com/raythx98/gohelpme v0.0.0-20250213184848-12a8fc0663f0/go.mod h1:nar+Gm/Rq336ZigwpNLw0GX1UA6zLdvfEceAGLEHAOQ=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=

@@ -1,5 +1,5 @@
 #Build Stage
-FROM golang:1.22.4-bookworm AS builder
+FROM golang:1.24.0-bookworm AS builder
 WORKDIR /app
 
 RUN apt-get update && apt-get install

@@ -22,7 +22,7 @@ network:
 	docker network create my-network || true
 
 db:
-	docker run --name ${APP_URLSHORTENER_DBHOST} -d \
+	docker run -d --rm --name ${APP_URLSHORTENER_DBHOST} \
 		--net my-network -p ${APP_URLSHORTENER_DBPORT}:${APP_URLSHORTENER_DBPORT} \
 		-e POSTGRES_PASSWORD=${APP_URLSHORTENER_DBPASSWORD} \
 		-v local-postgres:/var/lib/postgresql/data \
@@ -36,7 +36,7 @@ migrate_up:
 	migrate -database 'postgres://${APP_URLSHORTENER_DBUSERNAME}:${APP_URLSHORTENER_DBPASSWORD}@localhost:${APP_URLSHORTENER_DBPORT}/${APP_URLSHORTENER_DBDEFAULTNAME}?sslmode=disable' -path migrations up
 
 run: allow_direnv build volume network db format_env migrate_up
-	docker run --rm --name url-shortener-app \
+	docker run -d --rm --name url-shortener-app \
 		--net my-network -p ${APP_URLSHORTENER_SERVERPORT}:${APP_URLSHORTENER_SERVERPORT} \
 		--env-file .env url-shortener
 
