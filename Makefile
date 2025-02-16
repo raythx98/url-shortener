@@ -10,10 +10,10 @@ swagger:
 	swag init --parseDependency -o ./docs -d ./cmd/api,./controller
 
 allow_direnv:
-	direnv allow .
+	direnv allow . || true
 
 build:
-	docker build -t url_shortener .
+	docker build -t url-shortener .
 
 volume:
 	docker volume create local-postgres
@@ -26,19 +26,25 @@ db:
 		--net my-network -p ${APP_URLSHORTENER_DBPORT}:${APP_URLSHORTENER_DBPORT} \
 		-e POSTGRES_PASSWORD=${APP_URLSHORTENER_DBPASSWORD} \
 		-v local-postgres:/var/lib/postgresql/data \
-		postgres:latest || true
+		postgres:latest && sleep 5 || true
+
 
 format_env:
-	sed 's/^export //' .envrc > .env
+	find .envrc && sed 's/^export //' .envrc > .env || true
 
 migrate_up:
-	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	migrate -database 'postgres://${APP_URLSHORTENER_DBUSERNAME}:${APP_URLSHORTENER_DBPASSWORD}@localhost:${APP_URLSHORTENER_DBPORT}/${APP_URLSHORTENER_DBDEFAULTNAME}?sslmode=disable' -path migrations up
 
-run: allow_direnv build volume network db format_env migrate_up
+run: allow_direnv build volume network stop db format_env migrate_up
 	docker run -d --rm --name url-shortener-app \
 		--net my-network -p ${APP_URLSHORTENER_SERVERPORT}:${APP_URLSHORTENER_SERVERPORT} \
 		--env-file .env url-shortener
 
-stop:
-	docker stop url-shortener-app url-shortener-db
+stop_app:
+	docker stop url-shortener-app || true
+
+stop_db:
+	docker stop url-shortener-db || true
+	sleep 5
+
+stop: stop_app stop_db

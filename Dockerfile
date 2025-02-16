@@ -16,6 +16,5 @@ WORKDIR /app
 
 COPY --from=builder /app/main .
 
-COPY .envrc .
 EXPOSE 5051
 CMD ["./main"]
