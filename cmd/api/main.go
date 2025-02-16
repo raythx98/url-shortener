@@ -10,7 +10,7 @@ import (
 	_ "github.com/raythx98/url-shortener/docs"
 	"github.com/raythx98/url-shortener/service"
 	"github.com/raythx98/url-shortener/sqlc/db"
-	"github.com/raythx98/url-shortener/tools/mysql"
+	"github.com/raythx98/url-shortener/tools/postgres"
 	"github.com/raythx98/url-shortener/tools/zerologger"
 
 	"github.com/raythx98/gohelpme/middleware"
@@ -41,12 +41,12 @@ func main() {
 
 	log.Debug(ctx, "configs loaded", logger.WithField("config", config))
 
-	dbPool := mysql.NewPool(ctx, config, log)
+	dbPool := postgres.NewPool(ctx, config, log)
 	defer dbPool.Close()
 
-	urlMappingRepo := registerRepos(dbPool)
-	urlShortenerSvc := registerServices(urlMappingRepo)
-	urlShortener := registerControllers(urlShortenerSvc, validate)
+	repo := registerRepos(dbPool)
+	svcs := registerServices(repo, log)
+	ctrls := registerControllers(svcs, validate, log)
 
 	defaultMiddlewares := []func(next http.HandlerFunc) http.HandlerFunc{
 		middleware.CORS,
@@ -89,21 +89,21 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("OPTIONS /api/", middleware.Chain(urlShortener.Register, middleware.CORS))
+	mux.HandleFunc("OPTIONS /api/", middleware.Chain(ctrls.users.Register, middleware.CORS))
 
-	mux.HandleFunc("POST /api/auth/v1/register", middleware.Chain(urlShortener.Register, defaultMiddlewaresBasic...))
-	mux.HandleFunc("POST /api/auth/v1/login", middleware.Chain(urlShortener.Login, defaultMiddlewaresBasic...))
-	mux.HandleFunc("POST /api/auth/v1/refresh", middleware.Chain(urlShortener.Refresh, defaultMiddlewaresRefresh...))
-	mux.HandleFunc("POST /api/auth/v1/logout", middleware.Chain(urlShortener.Logout, defaultMiddlewaresAccess...))
+	mux.HandleFunc("POST /api/auth/v1/register", middleware.Chain(ctrls.users.Register, defaultMiddlewaresBasic...))
+	mux.HandleFunc("GET /api/users/v1", middleware.Chain(ctrls.users.GetProfile, defaultMiddlewaresAccess...))
 
-	mux.HandleFunc("GET /api/users/v1", middleware.Chain(urlShortener.Profile, defaultMiddlewaresAccess...))
+	mux.HandleFunc("POST /api/auth/v1/login", middleware.Chain(ctrls.auth.Login, defaultMiddlewaresBasic...))
+	mux.HandleFunc("POST /api/auth/v1/refresh", middleware.Chain(ctrls.auth.Refresh, defaultMiddlewaresRefresh...))
+	mux.HandleFunc("POST /api/auth/v1/logout", middleware.Chain(ctrls.auth.Logout, defaultMiddlewaresAccess...))
 
-	mux.HandleFunc("GET /api/urls/v1/{id}", middleware.Chain(urlShortener.GetUrl, defaultMiddlewaresAccess...))
-	mux.HandleFunc("DELETE /api/urls/v1/{id}", middleware.Chain(urlShortener.DeleteUrl, defaultMiddlewaresAccess...))
-	mux.HandleFunc("POST /api/urls/v1", middleware.Chain(urlShortener.CreateUrl, defaultMiddlewares...))
-	mux.HandleFunc("GET /api/urls/v1", middleware.Chain(urlShortener.GetUrls, defaultMiddlewares...))
+	mux.HandleFunc("GET /api/urls/v1/{id}", middleware.Chain(ctrls.urls.GetUrl, defaultMiddlewaresAccess...))
+	mux.HandleFunc("DELETE /api/urls/v1/{id}", middleware.Chain(ctrls.urls.DeleteUrl, defaultMiddlewaresAccess...))
+	mux.HandleFunc("POST /api/urls/v1", middleware.Chain(ctrls.urls.CreateUrl, defaultMiddlewares...))
+	mux.HandleFunc("GET /api/urls/v1", middleware.Chain(ctrls.urls.GetUrls, defaultMiddlewares...))
 
-	mux.HandleFunc("POST /api/urls/v1/redirect/{alias}", middleware.Chain(urlShortener.Redirect, defaultMiddlewares...))
+	mux.HandleFunc("POST /api/urls/v1/redirect/{shortLink}", middleware.Chain(ctrls.redirects.Redirect, defaultMiddlewares...))
 
 	//mux.Handle("/api/v1/url/redirect/{alias}", middleware.Chain(urlShortener.RedirectV2, defaultMiddlewaresAccess...))
 	//mux.Handle("/api/v1/url", middleware.Chain(urlShortener.Shorten, defaultMiddlewaresAccess...))
@@ -122,16 +122,36 @@ func registerRepos(pool *pgxpool.Pool) *db.Queries {
 	return db.New(pool)
 }
 
-func registerControllers(urlShortenerSvc *service.UrlShortener, v *validator.Validate) *controller.UrlShortener {
-	urlShortener := controller.New(urlShortenerSvc, v)
-	func(controller.IUrlShortener) {}(urlShortener)
-	return urlShortener
+type controllers struct {
+	auth      controller.IAuth
+	redirects controller.IRedirects
+	urls      controller.IUrls
+	users     controller.IUsers
 }
 
-func registerServices(urlMappingRepo *db.Queries) *service.UrlShortener {
-	urlShortenerSvc := service.New(urlMappingRepo)
-	func(service.IUrlShortener) {}(urlShortenerSvc)
-	return urlShortenerSvc
+func registerControllers(urlShortenerSvc services, v *validator.Validate, log logger.ILogger) controllers {
+	return controllers{
+		auth:      controller.NewAuth(urlShortenerSvc.auth, v, log),
+		redirects: controller.NewRedirects(urlShortenerSvc.redirects, v, log),
+		urls:      controller.NewUrls(urlShortenerSvc.urls, v, log),
+		users:     controller.NewUsers(urlShortenerSvc.users, v, log),
+	}
+}
+
+type services struct {
+	auth      service.IAuth
+	redirects service.IRedirects
+	urls      service.IUrls
+	users     service.IUsers
+}
+
+func registerServices(urlMappingRepo *db.Queries, log logger.ILogger) services {
+	return services{
+		auth:      service.NewAuth(urlMappingRepo, log),
+		redirects: service.NewRedirects(urlMappingRepo, log),
+		urls:      service.NewUrls(urlMappingRepo, log),
+		users:     service.NewUsers(urlMappingRepo, log),
+	}
 }
 
 func createTools() *validator.Validate {

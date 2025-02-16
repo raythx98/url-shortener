@@ -1,27 +1,4 @@
 basePath: /api/v1
-definitions:
-  dto.ErrorResponse:
-    properties:
-      code:
-        type: integer
-      data: {}
-      message:
-        type: string
-    type: object
-  dto.ShortenUrlRequest:
-    properties:
-      custom_expiry:
-        type: integer
-      is_no_expiry:
-        type: boolean
-      shortened_url:
-        type: string
-      url:
-        description: 'TODO: Add custom validation for URL Required'
-        type: string
-    required:
-    - url
-    type: object
 host: localhost:5051
 info:
   contact:
@@ -30,62 +7,5 @@ info:
     url: https://www.raythx.com
   title: URL Shortener Server
   version: "1.0"
-paths:
-  /url:
-    post:
-      consumes:
-      - application/json
-      description: Given a URL and custom settings, shorten it with a unique alias
-      operationId: shorten-url
-      parameters:
-      - description: Shorten URL Request
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/dto.ShortenUrlRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Ok
-          schema:
-            type: string
-        "422":
-          description: Validation Error
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-      summary: Shorten URL
-  /url/redirect/{alias}:
-    post:
-      consumes:
-      - application/json
-      description: Given an alias, redirects request to the full URL
-      operationId: redirect-alias
-      parameters:
-      - description: Alias
-        in: path
-        name: alias
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "303":
-          description: Redirected
-          schema:
-            type: string
-        "422":
-          description: Validation Error
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-      summary: Redirects to full URL
+paths: {}
 swagger: "2.0"
