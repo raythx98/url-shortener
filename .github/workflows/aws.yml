@@ -59,6 +59,11 @@ jobs:
             then
               go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
             fi
+          
+            if ! command -v nginx &> /dev/null
+            then
+              sudo dnf install -y nginx
+            fi
           EOF
 
       - name: Start necessary services
@@ -70,9 +75,35 @@ jobs:
               sudo systemctl start docker
             fi
           
+            if ! systemctl is-active --quiet nginx
+            then
+              sudo systemctl start nginx
+            fi
+          
             if ! groups $USER | grep -w docker
               then
               sudo usermod -aG docker $USER
+            fi
+          
+            if ! systemctl is-active --quiet docker; then
+              echo "Cannot start Docker."
+              exit 1
+            else 
+              echo "Docker is running."
+            fi
+          
+            if ! systemctl is-active --quiet nginx; then
+              echo "Cannot start Nginx."
+              exit 1
+            else 
+              echo "Nginx is running."
+            fi
+          
+            if ! groups $USER | grep -w docker; then
+              echo "Cannot add user to Docker group."
+              exit 1
+            else 
+              echo "Docker has sufficient permissions."
             fi
           EOF
 
@@ -101,5 +132,38 @@ jobs:
           
             export $(grep -v '^#' .env | xargs)
             make run
+          
+            sleep 5
+          
+            if [ "$(docker ps -q -f name=url-shortener-app)" ]; then
+              echo "App container is running."
+            else
+              echo "App container is not running."
+              rm -rf /tmp/url-shortener
+              exit 1
+            fi
+          
+            if [ "$(docker ps -q -f name=url-shortener-db)" ]; then
+              echo "DB container is running."
+            else
+              echo "DB container is not running."
+              rm -rf /tmp/url-shortener
+              exit 1
+            fi
+          EOF
+
+      - name: Setup Nginx
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+            sudo cp /tmp/url-shortener/.nginx/reverse-proxy.conf /etc/nginx/conf.d/reverse-proxy.conf
             rm -rf /tmp/url-shortener
+            sudo systemctl restart nginx
+          
+            if ! systemctl is-active --quiet nginx; then
+              echo "Cannot start Nginx."
+              exit 1
+            else 
+              echo "Nginx is running."
+            fi
           EOF

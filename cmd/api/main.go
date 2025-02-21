@@ -105,6 +105,10 @@ func main() {
 
 	mux.HandleFunc("POST /api/urls/v1/redirect/{shortLink}", middleware.Chain(ctrls.redirects.Redirect, defaultMiddlewares...))
 
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "API not found", http.StatusNotFound)
+	})
+
 	//mux.Handle("/api/v1/url/redirect/{alias}", middleware.Chain(urlShortener.RedirectV2, defaultMiddlewaresAccess...))
 	//mux.Handle("/api/v1/url", middleware.Chain(urlShortener.Shorten, defaultMiddlewaresAccess...))
 	mux.HandleFunc("/swagger/*", httpSwagger.Handler(httpSwagger.URL(

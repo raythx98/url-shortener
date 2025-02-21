@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/sqlc/db"
@@ -161,6 +162,10 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest) (dto.Cre
 	} else {
 		// TODO: Configure random
 		createUrlParams.ShortUrl = uuid.New().String()
+	}
+
+	if strings.EqualFold(createUrlParams.ShortUrl, "api") {
+		return dto.CreateUrlResponse{}, fmt.Errorf("short url cannot be 'api'")
 	}
 
 	createdUrl, err := s.Repo.CreateUrl(ctx, createUrlParams)
