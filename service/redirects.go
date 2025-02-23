@@ -2,10 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v5"
+	"github.com/raythx98/gohelpme/errorhelper"
 
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/sqlc/db"
-	
+
 	"github.com/raythx98/gohelpme/tool/logger"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -29,6 +32,12 @@ func NewRedirects(repo *db.Queries, log logger.ILogger) *Redirects {
 
 func (s *Redirects) Redirect(ctx context.Context, shortLink string, req dto.RedirectRequest) (dto.RedirectResponse, error) {
 	getUrl, err := s.Repo.GetUrlByShortUrl(ctx, shortLink)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return dto.RedirectResponse{}, &errorhelper.AppError{
+			Code:    4,
+			Message: "Invalid short url",
+		}
+	}
 	if err != nil {
 		return dto.RedirectResponse{}, err
 	}

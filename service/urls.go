@@ -2,10 +2,15 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v5"
+	"github.com/raythx98/gohelpme/errorhelper"
+	"math/rand"
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/sqlc/db"
@@ -13,7 +18,6 @@ import (
 	"github.com/raythx98/gohelpme/tool/logger"
 	"github.com/raythx98/gohelpme/tool/reqctx"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -145,6 +149,20 @@ func (s *Urls) GetUrls(ctx context.Context) (dto.GetUrlsResponse, error) {
 	return response, nil
 }
 
+const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+func init() {
+	rand.New(rand.NewSource(time.Now().UnixNano()))
+}
+
+func generateAlphaNumeric(length int) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
 func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest) (dto.CreateUrlResponse, error) {
 	reqCtx := reqctx.GetValue(ctx)
 
@@ -160,8 +178,18 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest) (dto.Cre
 	if req.CustomUrl != "" {
 		createUrlParams.ShortUrl = req.CustomUrl
 	} else {
-		// TODO: Configure random
-		createUrlParams.ShortUrl = uuid.New().String()
+		createUrlParams.ShortUrl = generateAlphaNumeric(8)
+	}
+
+	_, err := s.Repo.GetUrlByShortUrl(ctx, createUrlParams.ShortUrl)
+	if err == nil {
+		return dto.CreateUrlResponse{}, &errorhelper.AppError{
+			Code:    5,
+			Message: "Url already taken",
+		}
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return dto.CreateUrlResponse{}, err
 	}
 
 	if strings.EqualFold(createUrlParams.ShortUrl, "api") {

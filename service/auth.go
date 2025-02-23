@@ -2,7 +2,10 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v5"
+	"github.com/raythx98/gohelpme/errorhelper"
 	"strconv"
 
 	"github.com/raythx98/url-shortener/dto"
@@ -32,12 +35,21 @@ func NewAuth(repo *db.Queries, log logger.ILogger) *Auth {
 
 func (s *Auth) Login(ctx context.Context, request dto.LoginRequest) (dto.LoginResponse, error) {
 	user, err := s.Repo.GetUserByEmail(ctx, request.Email)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return dto.LoginResponse{}, &errorhelper.AppError{
+			Code:    3,
+			Message: "Email is not registered",
+		}
+	}
 	if err != nil {
 		return dto.LoginResponse{}, err
 	}
 
 	if user.Password != request.Password {
-		return dto.LoginResponse{}, fmt.Errorf("wrong password")
+		return dto.LoginResponse{}, &errorhelper.AppError{
+			Code:    2,
+			Message: "Incorrect Password",
+		}
 	}
 
 	accessToken, err := jwt.NewAccessToken(strconv.FormatInt(user.ID, 10))

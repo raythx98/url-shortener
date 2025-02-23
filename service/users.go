@@ -2,7 +2,10 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v5"
+	"github.com/raythx98/gohelpme/errorhelper"
 
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/sqlc/db"
@@ -29,6 +32,17 @@ func NewUsers(repo *db.Queries, log logger.ILogger) *Users {
 }
 
 func (s *Users) Register(ctx context.Context, req dto.RegisterRequest) error {
+	_, err := s.Repo.GetUserByEmail(ctx, req.Email)
+	if err == nil {
+		return &errorhelper.AppError{
+			Code:    1,
+			Message: "Email has already been registered",
+		}
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+	
 	return s.Repo.CreateUser(ctx, db.CreateUserParams{
 		Email:    req.Email,
 		Password: req.Password,
