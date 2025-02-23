@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/raythx98/gohelpme/errorhelper"
+	"github.com/raythx98/url-shortener/tools/crypto"
 
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/sqlc/db"
@@ -42,10 +43,15 @@ func (s *Users) Register(ctx context.Context, req dto.RegisterRequest) error {
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return err
 	}
-	
+
+	encodedHashedPassword, err := crypto.New().GenerateFromPassword(req.Password)
+	if err != nil {
+		return err
+	}
+
 	return s.Repo.CreateUser(ctx, db.CreateUserParams{
 		Email:    req.Email,
-		Password: req.Password,
+		Password: encodedHashedPassword,
 	})
 }
 

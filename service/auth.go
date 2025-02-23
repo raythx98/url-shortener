@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/raythx98/gohelpme/errorhelper"
+	"github.com/raythx98/url-shortener/tools/crypto"
 	"strconv"
 
 	"github.com/raythx98/url-shortener/dto"
@@ -45,7 +46,12 @@ func (s *Auth) Login(ctx context.Context, request dto.LoginRequest) (dto.LoginRe
 		return dto.LoginResponse{}, err
 	}
 
-	if user.Password != request.Password {
+	authenticated, err := crypto.New().ComparePasswordAndHash(request.Password, user.Password)
+	if err != nil {
+		return dto.LoginResponse{}, err
+	}
+
+	if !authenticated {
 		return dto.LoginResponse{}, &errorhelper.AppError{
 			Code:    2,
 			Message: "Incorrect Password",
