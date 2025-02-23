@@ -91,6 +91,9 @@ func (c *Urls) GetUrls(w http.ResponseWriter, r *http.Request) {
 	reqctx.GetValue(ctx).SetUserId(parseInt)
 
 	resp, err := c.UrlsService.GetUrls(ctx)
+	if err != nil {
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	marshal, err := json.Marshal(resp)
@@ -128,6 +131,9 @@ func (c *Urls) CreateUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := c.UrlsService.CreateUrl(ctx, req)
+	if err != nil {
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	marshal, err := json.Marshal(resp)
