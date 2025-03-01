@@ -22,6 +22,7 @@ func GetMiddlewares(tools resources.Tools) Template {
 		middleware.CORS,
 		middleware.JsonResponse,
 		middleware.AddRequestId,
+		middleware.ReqCtx,
 		middleware.JwtSubject(tools.Jwt),
 		middleware.Log(tools.Log),
 		middleware.Recoverer(),

@@ -29,8 +29,9 @@ type Users struct {
 
 func NewUsers(repo *db.Queries, log logger.ILogger, crypto crypto.ICrypto) *Users {
 	return &Users{
-		Repo: repo,
-		Log:  log,
+		Repo:   repo,
+		Log:    log,
+		Crypto: crypto,
 	}
 }
 

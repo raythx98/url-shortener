@@ -32,9 +32,10 @@ type Auth struct {
 
 func NewAuth(repo *db.Queries, log logger.ILogger, jwt jwthelper.IJwt, crypto crypto.ICrypto) *Auth {
 	return &Auth{
-		Repo: repo,
-		Log:  log,
-		Jwt:  jwt,
+		Repo:   repo,
+		Log:    log,
+		Jwt:    jwt,
+		Crypto: crypto,
 	}
 }
 
