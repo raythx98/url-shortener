@@ -1,6 +1,7 @@
--- name: CreateUser :exec
+-- name: CreateUser :one
 insert into users (email, password)
-values ($1, $2);
+values ($1, $2)
+returning *;
 
 -- name: GetUserByEmail :one
 select *

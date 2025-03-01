@@ -19,6 +19,7 @@ import (
 )
 
 type IAuth interface {
+	Register(ctx context.Context, req dto.RegisterRequest) (dto.LoginResponse, error)
 	Login(ctx context.Context, request dto.LoginRequest) (dto.LoginResponse, error)
 	Refresh(ctx context.Context) (dto.LoginResponse, error)
 }
@@ -37,6 +38,41 @@ func NewAuth(repo *db.Queries, log logger.ILogger, jwt jwthelper.IJwt, crypto cr
 		Jwt:    jwt,
 		Crypto: crypto,
 	}
+}
+
+func (s *Auth) Register(ctx context.Context, req dto.RegisterRequest) (dto.LoginResponse, error) {
+	_, err := s.Repo.GetUserByEmail(ctx, req.Email)
+	if err == nil {
+		return dto.LoginResponse{}, errorhelper.NewAppError(1, "Email has already been registered", err)
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return dto.LoginResponse{}, err
+	}
+
+	encodedHashedPassword, err := s.Crypto.GenerateFromPassword(req.Password)
+	if err != nil {
+		return dto.LoginResponse{}, err
+	}
+
+	user, err := s.Repo.CreateUser(ctx, db.CreateUserParams{
+		Email:    req.Email,
+		Password: encodedHashedPassword,
+	})
+	if err != nil {
+		return dto.LoginResponse{}, err
+	}
+
+	accessToken, err := s.Jwt.NewAccessToken(strconv.FormatInt(user.ID, 10))
+	if err != nil {
+		return dto.LoginResponse{}, err
+	}
+
+	refreshToken, err := s.Jwt.NewRefreshToken(strconv.FormatInt(user.ID, 10))
+	if err != nil {
+		return dto.LoginResponse{}, err
+	}
+
+	return dto.LoginResponse{AccessToken: accessToken, RefreshToken: refreshToken}, nil
 }
 
 func (s *Auth) Login(ctx context.Context, request dto.LoginRequest) (dto.LoginResponse, error) {

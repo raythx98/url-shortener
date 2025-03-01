@@ -12,9 +12,9 @@ import (
 func Register(mux *http.ServeMux, ctrls resources.Controllers, tools resources.Tools) {
 	middlewares := mw_helper.GetMiddlewares(tools)
 
-	mux.HandleFunc("OPTIONS /api/", middleware.Chain(ctrls.Users.Register, middleware.CORS))
+	mux.HandleFunc("OPTIONS /api/", middleware.Chain(ctrls.Auth.Register, middleware.CORS))
 
-	mux.HandleFunc("POST /api/auth/v1/register", middleware.Chain(ctrls.Users.Register, middlewares.DefaultBasicToken...))
+	mux.HandleFunc("POST /api/auth/v1/register", middleware.Chain(ctrls.Auth.Register, middlewares.DefaultBasicToken...))
 	mux.HandleFunc("GET /api/users/v1", middleware.Chain(ctrls.Users.GetProfile, middlewares.DefaultAccessToken...))
 
 	mux.HandleFunc("POST /api/auth/v1/login", middleware.Chain(ctrls.Auth.Login, middlewares.DefaultBasicToken...))

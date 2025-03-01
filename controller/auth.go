@@ -14,6 +14,7 @@ import (
 )
 
 type IAuth interface {
+	Register(w http.ResponseWriter, r *http.Request)
 	Login(w http.ResponseWriter, r *http.Request)
 	Refresh(w http.ResponseWriter, r *http.Request)
 	Logout(w http.ResponseWriter, r *http.Request)
@@ -31,6 +32,32 @@ func NewAuth(service service.IAuth, validate validator.IValidator, log logger.IL
 		Validator:   validate,
 		Log:         log,
 	}
+}
+
+func (c *Auth) Register(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var err error
+	defer func() {
+		reqctx.GetValue(ctx).SetError(err)
+	}()
+
+	req, err := httphelper.GetRequestBodyAndValidate[dto.RegisterRequest](ctx, r, c.Validator)
+	if err != nil {
+		return
+	}
+
+	resp, err := c.AuthService.Register(ctx, req)
+	if err != nil {
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	marshal, err := json.Marshal(resp)
+	if err != nil {
+		return
+	}
+
+	_, err = w.Write(marshal)
 }
 
 func (c *Auth) Login(w http.ResponseWriter, r *http.Request) {
