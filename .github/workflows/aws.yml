@@ -129,6 +129,9 @@ jobs:
             echo 'APP_URLSHORTENER_DBHOST=url-shortener-db' >> .env
             echo 'APP_URLSHORTENER_DBPORT=5432' >> .env
             echo 'APP_URLSHORTENER_DBDEFAULTNAME=postgres' >> .env
+            echo 'APP_URLSHORTENER_JWTSECRET=${{ secrets.JWT_SECRET }}' >> .env
+            echo 'APP_URLSHORTENER_BASICAUTHUSERNAME=raythx-url-shortener' >> .env
+            echo 'APP_URLSHORTENER_BASICAUTHPASSWORD=${{ secrets.BASIC_AUTH_PASSWORD }}' >> .env
           
             export $(grep -v '^#' .env | xargs)
             make run

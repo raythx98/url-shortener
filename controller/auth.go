@@ -10,8 +10,7 @@ import (
 	"github.com/raythx98/gohelpme/tool/httphelper"
 	"github.com/raythx98/gohelpme/tool/logger"
 	"github.com/raythx98/gohelpme/tool/reqctx"
-
-	"github.com/go-playground/validator/v10"
+	"github.com/raythx98/gohelpme/tool/validator"
 )
 
 type IAuth interface {
@@ -22,11 +21,11 @@ type IAuth interface {
 
 type Auth struct {
 	AuthService service.IAuth
-	Validator   *validator.Validate
+	Validator   validator.IValidator
 	Log         logger.ILogger
 }
 
-func NewAuth(service service.IAuth, validate *validator.Validate, log logger.ILogger) *Auth {
+func NewAuth(service service.IAuth, validate validator.IValidator, log logger.ILogger) *Auth {
 	return &Auth{
 		AuthService: service,
 		Validator:   validate,
@@ -41,7 +40,6 @@ func (c *Auth) Login(w http.ResponseWriter, r *http.Request) {
 		reqctx.GetValue(ctx).SetError(err)
 	}()
 
-	// TODO: Create a requestBodyHelper tool
 	req, err := httphelper.GetRequestBodyAndValidate[dto.LoginRequest](ctx, r, c.Validator)
 	if err != nil {
 		return

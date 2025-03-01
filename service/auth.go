@@ -4,17 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	"github.com/raythx98/gohelpme/errorhelper"
-	"github.com/raythx98/url-shortener/tools/crypto"
 	"strconv"
 
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/sqlc/db"
+	"github.com/raythx98/url-shortener/tools/crypto"
 
-	"github.com/raythx98/gohelpme/tool/jwt"
+	"github.com/raythx98/gohelpme/errorhelper"
+	"github.com/raythx98/gohelpme/tool/jwthelper"
 	"github.com/raythx98/gohelpme/tool/logger"
 	"github.com/raythx98/gohelpme/tool/reqctx"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type IAuth interface {
@@ -23,47 +24,44 @@ type IAuth interface {
 }
 
 type Auth struct {
-	Repo *db.Queries
-	Log  logger.ILogger
+	Repo   *db.Queries
+	Jwt    jwthelper.IJwt
+	Log    logger.ILogger
+	Crypto crypto.ICrypto
 }
 
-func NewAuth(repo *db.Queries, log logger.ILogger) *Auth {
+func NewAuth(repo *db.Queries, log logger.ILogger, jwt jwthelper.IJwt, crypto crypto.ICrypto) *Auth {
 	return &Auth{
 		Repo: repo,
 		Log:  log,
+		Jwt:  jwt,
 	}
 }
 
 func (s *Auth) Login(ctx context.Context, request dto.LoginRequest) (dto.LoginResponse, error) {
 	user, err := s.Repo.GetUserByEmail(ctx, request.Email)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return dto.LoginResponse{}, &errorhelper.AppError{
-			Code:    3,
-			Message: "Email is not registered",
-		}
+		return dto.LoginResponse{}, errorhelper.NewAppError(3, "Email is not registered", err)
 	}
 	if err != nil {
 		return dto.LoginResponse{}, err
 	}
 
-	authenticated, err := crypto.New().ComparePasswordAndHash(request.Password, user.Password)
+	authenticated, err := s.Crypto.ComparePasswordAndHash(request.Password, user.Password)
 	if err != nil {
 		return dto.LoginResponse{}, err
 	}
 
 	if !authenticated {
-		return dto.LoginResponse{}, &errorhelper.AppError{
-			Code:    2,
-			Message: "Incorrect Password",
-		}
+		return dto.LoginResponse{}, errorhelper.NewAppError(2, "Incorrect Password", err)
 	}
 
-	accessToken, err := jwt.NewAccessToken(strconv.FormatInt(user.ID, 10))
+	accessToken, err := s.Jwt.NewAccessToken(strconv.FormatInt(user.ID, 10))
 	if err != nil {
 		return dto.LoginResponse{}, err
 	}
 
-	refreshToken, err := jwt.NewRefreshToken(strconv.FormatInt(user.ID, 10))
+	refreshToken, err := s.Jwt.NewRefreshToken(strconv.FormatInt(user.ID, 10))
 	if err != nil {
 		return dto.LoginResponse{}, err
 	}
@@ -78,12 +76,12 @@ func (s *Auth) Refresh(ctx context.Context) (dto.LoginResponse, error) {
 		return dto.LoginResponse{}, fmt.Errorf("user id not found")
 	}
 
-	accessToken, err := jwt.NewAccessToken(strconv.FormatInt(*reqCtx.UserId, 10))
+	accessToken, err := s.Jwt.NewAccessToken(strconv.FormatInt(*reqCtx.UserId, 10))
 	if err != nil {
 		return dto.LoginResponse{}, err
 	}
 
-	refreshToken, err := jwt.NewRefreshToken(strconv.FormatInt(*reqCtx.UserId, 10))
+	refreshToken, err := s.Jwt.NewRefreshToken(strconv.FormatInt(*reqCtx.UserId, 10))
 	if err != nil {
 		return dto.LoginResponse{}, err
 	}

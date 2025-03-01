@@ -10,8 +10,7 @@ import (
 	"github.com/raythx98/gohelpme/tool/httphelper"
 	"github.com/raythx98/gohelpme/tool/logger"
 	"github.com/raythx98/gohelpme/tool/reqctx"
-
-	"github.com/go-playground/validator/v10"
+	"github.com/raythx98/gohelpme/tool/validator"
 )
 
 type IUsers interface {
@@ -21,11 +20,11 @@ type IUsers interface {
 
 type Users struct {
 	UsersService service.IUsers
-	Validator    *validator.Validate
+	Validator    validator.IValidator
 	Log          logger.ILogger
 }
 
-func NewUsers(service service.IUsers, validate *validator.Validate, log logger.ILogger) *Users {
+func NewUsers(service service.IUsers, validate validator.IValidator, log logger.ILogger) *Users {
 	return &Users{
 		UsersService: service,
 		Validator:    validate,

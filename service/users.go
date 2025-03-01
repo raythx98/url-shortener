@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	"github.com/raythx98/gohelpme/errorhelper"
-	"github.com/raythx98/url-shortener/tools/crypto"
 
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/sqlc/db"
+	"github.com/raythx98/url-shortener/tools/crypto"
 
+	"github.com/raythx98/gohelpme/errorhelper"
 	"github.com/raythx98/gohelpme/tool/logger"
 	"github.com/raythx98/gohelpme/tool/reqctx"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type IUsers interface {
@@ -21,11 +22,12 @@ type IUsers interface {
 }
 
 type Users struct {
-	Repo *db.Queries
-	Log  logger.ILogger
+	Repo   *db.Queries
+	Log    logger.ILogger
+	Crypto crypto.ICrypto
 }
 
-func NewUsers(repo *db.Queries, log logger.ILogger) *Users {
+func NewUsers(repo *db.Queries, log logger.ILogger, crypto crypto.ICrypto) *Users {
 	return &Users{
 		Repo: repo,
 		Log:  log,
@@ -35,16 +37,13 @@ func NewUsers(repo *db.Queries, log logger.ILogger) *Users {
 func (s *Users) Register(ctx context.Context, req dto.RegisterRequest) error {
 	_, err := s.Repo.GetUserByEmail(ctx, req.Email)
 	if err == nil {
-		return &errorhelper.AppError{
-			Code:    1,
-			Message: "Email has already been registered",
-		}
+		return errorhelper.NewAppError(1, "Email has already been registered", err)
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return err
 	}
 
-	encodedHashedPassword, err := crypto.New().GenerateFromPassword(req.Password)
+	encodedHashedPassword, err := s.Crypto.GenerateFromPassword(req.Password)
 	if err != nil {
 		return err
 	}

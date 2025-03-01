@@ -3,18 +3,14 @@ package controller
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/service"
 
 	"github.com/raythx98/gohelpme/tool/httphelper"
-	"github.com/raythx98/gohelpme/tool/jwt"
 	"github.com/raythx98/gohelpme/tool/logger"
 	"github.com/raythx98/gohelpme/tool/reqctx"
-
-	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt/v5/request"
+	"github.com/raythx98/gohelpme/tool/validator"
 )
 
 type IUrls interface {
@@ -26,11 +22,11 @@ type IUrls interface {
 
 type Urls struct {
 	UrlsService service.IUrls
-	Validator   *validator.Validate
+	Validator   validator.IValidator
 	Log         logger.ILogger
 }
 
-func NewUrls(service service.IUrls, validate *validator.Validate, log logger.ILogger) *Urls {
+func NewUrls(service service.IUrls, validate validator.IValidator, log logger.ILogger) *Urls {
 	return &Urls{
 		UrlsService: service,
 		Validator:   validate,
@@ -67,29 +63,6 @@ func (c *Urls) GetUrls(w http.ResponseWriter, r *http.Request) {
 		reqctx.GetValue(ctx).SetError(err)
 	}()
 
-	// TODO: Abstract GetSubject
-	token, err := request.BearerExtractor{}.ExtractToken(r)
-	if err != nil {
-		return
-	}
-
-	jwtToken, err := jwt.GetValidAccessToken(token)
-	if err != nil {
-		return
-	}
-
-	subject, err := jwtToken.Claims.GetSubject()
-	if err != nil {
-		return
-	}
-
-	parseInt, err := strconv.ParseInt(subject, 10, 64)
-	if err != nil {
-		return
-	}
-
-	reqctx.GetValue(ctx).SetUserId(parseInt)
-
 	resp, err := c.UrlsService.GetUrls(ctx)
 	if err != nil {
 		return
@@ -110,20 +83,6 @@ func (c *Urls) CreateUrl(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		reqctx.GetValue(ctx).SetError(err)
 	}()
-
-	token, err := request.BearerExtractor{}.ExtractToken(r)
-	if err == nil {
-		jwtToken, err := jwt.GetValidAccessToken(token)
-		if err == nil {
-			subject, err := jwtToken.Claims.GetSubject()
-			if err == nil {
-				parseInt, err := strconv.ParseInt(subject, 10, 64)
-				if err == nil {
-					reqctx.GetValue(ctx).SetUserId(parseInt)
-				}
-			}
-		}
-	}
 
 	req, err := httphelper.GetRequestBodyAndValidate[dto.CreateUrlRequest](ctx, r, validator.New())
 	if err != nil {

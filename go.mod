@@ -3,12 +3,9 @@ module github.com/raythx98/url-shortener
 go 1.24.0
 
 require (
-	github.com/go-playground/validator/v10 v10.25.0
-	github.com/golang-jwt/jwt/v5 v5.2.1
-	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/raythx98/gohelpme v0.0.0-20250213184848-12a8fc0663f0
+	github.com/raythx98/gohelpme v0.0.0-20250301084242-764fd6215320
 	github.com/rs/zerolog v1.33.0
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.4
@@ -23,6 +20,9 @@ require (
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.25.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
@@ -33,7 +33,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/swaggo/files/v2 v2.0.2 // indirect
-	golang.org/x/crypto v0.34.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect

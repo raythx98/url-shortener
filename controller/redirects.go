@@ -10,8 +10,7 @@ import (
 	"github.com/raythx98/gohelpme/tool/httphelper"
 	"github.com/raythx98/gohelpme/tool/logger"
 	"github.com/raythx98/gohelpme/tool/reqctx"
-
-	"github.com/go-playground/validator/v10"
+	"github.com/raythx98/gohelpme/tool/validator"
 )
 
 type IRedirects interface {
@@ -20,11 +19,11 @@ type IRedirects interface {
 
 type Redirects struct {
 	RedirectsService service.IRedirects
-	Validator        *validator.Validate
+	Validator        validator.IValidator
 	Log              logger.ILogger
 }
 
-func NewRedirects(service service.IRedirects, validate *validator.Validate, log logger.ILogger) *Redirects {
+func NewRedirects(service service.IRedirects, validate validator.IValidator, log logger.ILogger) *Redirects {
 	return &Redirects{
 		RedirectsService: service,
 		Validator:        validate,
@@ -38,7 +37,7 @@ func (c *Redirects) Redirect(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		reqctx.GetValue(ctx).SetError(err)
 	}()
-	
+
 	req, err := httphelper.GetRequestBodyAndValidate[dto.RedirectRequest](ctx, r, c.Validator)
 	if err != nil {
 		return
