@@ -170,7 +170,7 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest) (dto.Cre
 
 	_, err := s.Repo.GetUrlByShortUrl(ctx, createUrlParams.ShortUrl)
 	if err == nil {
-		return dto.CreateUrlResponse{}, errorhelper.NewAppError(5, "Url already taken", err)
+		return dto.CreateUrlResponse{}, errorhelper.NewAppError(5, "Short url already taken", err)
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return dto.CreateUrlResponse{}, err
