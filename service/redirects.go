@@ -33,7 +33,7 @@ func NewRedirects(repo *db.Queries, log logger.ILogger) *Redirects {
 func (s *Redirects) Redirect(ctx context.Context, shortLink string, req dto.RedirectRequest) (dto.RedirectResponse, error) {
 	getUrl, err := s.Repo.GetUrlByShortUrl(ctx, shortLink)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return dto.RedirectResponse{}, errorhelper.NewAppError(4, "Invalid short url", err)
+		return dto.RedirectResponse{}, errorhelper.NewAppError(4, "Invalid short url, please create a new one", err)
 	}
 	if err != nil {
 		return dto.RedirectResponse{}, err
