@@ -153,6 +153,8 @@ jobs:
               rm -rf /tmp/url-shortener
               exit 1
             fi
+          
+            docker system prune -af --volumes
           EOF
 
       - name: Setup Nginx
