@@ -89,7 +89,7 @@ func (c *Urls) CreateUrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := c.UrlsService.CreateUrl(ctx, req)
+	resp, err := c.UrlsService.CreateUrl(ctx, req, r.Header.Get("Origin"))
 	if err != nil {
 		return
 	}

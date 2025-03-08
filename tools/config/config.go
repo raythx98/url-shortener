@@ -13,6 +13,7 @@ type Specification struct {
 	JwtSecret         string `required:"true"`
 	BasicAuthUsername string `required:"true"`
 	BasicAuthPassword string `required:"true"`
+	SupabaseKey       string `required:"true"`
 }
 
 func Load() *Specification {

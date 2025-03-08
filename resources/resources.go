@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"github.com/raythx98/url-shortener/tools/supabase"
 	"time"
 
 	"github.com/raythx98/url-shortener/controller"
@@ -41,6 +42,10 @@ func RegisterServices(_ context.Context, urlMappingRepo *db.Queries, tools Tools
 }
 
 func CreateTools(ctx context.Context, config *config.Specification) Tools {
+
+	// TODO: Simplified implementation, change to AWS S3 later.
+	supabase.New(config.SupabaseKey)
+
 	validate := validator.New()
 	log := zerologger.New(config.Debug)
 	dbPool := postgres.NewPool(ctx, config, log)

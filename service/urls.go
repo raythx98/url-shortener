@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/raythx98/url-shortener/tools/supabase"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -18,12 +20,13 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	qrcode "github.com/skip2/go-qrcode"
 )
 
 type IUrls interface {
 	GetUrl(ctx context.Context, urlId string) (dto.GetUrlResponse, error)
 	GetUrls(ctx context.Context) (dto.GetUrlsResponse, error)
-	CreateUrl(ctx context.Context, req dto.CreateUrlRequest) (dto.CreateUrlResponse, error)
+	CreateUrl(ctx context.Context, req dto.CreateUrlRequest, origin string) (dto.CreateUrlResponse, error)
 	DeleteUrl(ctx context.Context, urlId string) error
 }
 
@@ -150,13 +153,12 @@ func (s *Urls) GetUrls(ctx context.Context) (dto.GetUrlsResponse, error) {
 	return response, nil
 }
 
-func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest) (dto.CreateUrlResponse, error) {
+func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest, origin string) (dto.CreateUrlResponse, error) {
 	reqCtx := reqctx.GetValue(ctx)
 
 	createUrlParams := db.CreateUrlParams{
 		Title:   req.Title,
 		FullUrl: req.FullUrl,
-		Qr:      "https://caqzitwuslrszkfwbmve.supabase.co/storage/v1/object/public/qrs/qr-kiykel",
 	}
 	if reqCtx.UserId != nil {
 		createUrlParams.UserID = pgtype.Int8{Int64: *reqCtx.UserId, Valid: true}
@@ -179,6 +181,38 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest) (dto.Cre
 	if strings.EqualFold(createUrlParams.ShortUrl, "api") {
 		return dto.CreateUrlResponse{}, fmt.Errorf("short url cannot be 'api'")
 	}
+
+	//upload file
+	// get origin without 'http://' or 'https://' or `.` or `/` or `:` or `?`
+	fileNamePrefix := strings.ReplaceAll(origin, "http://", "")
+	fileNamePrefix = strings.ReplaceAll(fileNamePrefix, "https://", "")
+	fileNamePrefix = strings.ReplaceAll(fileNamePrefix, ".", "")
+	fileNamePrefix = strings.ReplaceAll(fileNamePrefix, "/", "")
+	fileNamePrefix = strings.ReplaceAll(fileNamePrefix, ":", "")
+	fileNamePrefix = strings.ReplaceAll(fileNamePrefix, "?", "")
+
+	f, err := os.CreateTemp("", "qr-*.png")
+	if err != nil {
+		return dto.CreateUrlResponse{}, err
+	}
+	defer func(name string) {
+		_ = os.Remove(name)
+	}(f.Name()) // clean up
+
+	fileName := fmt.Sprintf("%s-%s", fileNamePrefix, createUrlParams.ShortUrl)
+	fmt.Println("filename: " + fileName)
+
+	err = qrcode.WriteFile(fmt.Sprintf("%s/%s", origin, createUrlParams.ShortUrl),
+		qrcode.Medium, 256, f.Name())
+	if err != nil {
+		return dto.CreateUrlResponse{}, err
+	}
+
+	if err := supabase.UpdateFile(fileName, f); err != nil {
+		return dto.CreateUrlResponse{}, err
+	}
+
+	createUrlParams.Qr = "https://caqzitwuslrszkfwbmve.supabase.co/storage/v1/object/public/qrs//" + fileName
 
 	createdUrl, err := s.Repo.CreateUrl(ctx, createUrlParams)
 	if err != nil {

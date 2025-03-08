@@ -7,6 +7,8 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/raythx98/gohelpme v0.0.0-20250304161847-d726b9d874e5
 	github.com/rs/zerolog v1.33.0
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
+	github.com/supabase-community/storage-go v0.7.0
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.4
 )
