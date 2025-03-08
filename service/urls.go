@@ -156,7 +156,7 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest) (dto.Cre
 	createUrlParams := db.CreateUrlParams{
 		Title:   req.Title,
 		FullUrl: req.FullUrl,
-		Qr:      req.Qr,
+		Qr:      "https://caqzitwuslrszkfwbmve.supabase.co/storage/v1/object/public/qrs/qr-kiykel",
 	}
 	if reqCtx.UserId != nil {
 		createUrlParams.UserID = pgtype.Int8{Int64: *reqCtx.UserId, Valid: true}
