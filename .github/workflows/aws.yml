@@ -132,7 +132,10 @@ jobs:
             echo 'APP_URLSHORTENER_JWTSECRET=${{ secrets.JWT_SECRET }}' >> .env
             echo 'APP_URLSHORTENER_BASICAUTHUSERNAME=raythx-url-shortener' >> .env
             echo 'APP_URLSHORTENER_BASICAUTHPASSWORD=${{ secrets.BASIC_AUTH_PASSWORD }}' >> .env
-            echo 'APP_URLSHORTENER_SUPABASEKEY=${{ secrets.SUPABASE_KEY }}' >> .env
+            echo 'APP_URLSHORTENER_AWSREGION=ap-southeast-1' >> .env
+            echo 'APP_URLSHORTENER_AWSS3BUCKET=production-url-shortener-qrs' >> .env
+            echo 'APP_URLSHORTENER_AWSACCESSKEY=${{ secrets.AWS_ACCESS_KEY }}' >> .env
+            echo 'APP_URLSHORTENER_AWSSECRETKEY=${{ secrets.AWS_SECRET_KEY }}' >> .env
           
             export $(grep -v '^#' .env | xargs)
             make run

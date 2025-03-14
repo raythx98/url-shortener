@@ -6,6 +6,7 @@ import (
 	"github.com/raythx98/url-shortener/tools/crypto"
 	"github.com/raythx98/url-shortener/tools/random"
 
+	"github.com/raythx98/gohelpme/tool/aws"
 	"github.com/raythx98/gohelpme/tool/basicauth"
 	"github.com/raythx98/gohelpme/tool/jwthelper"
 	"github.com/raythx98/gohelpme/tool/logger"
@@ -22,6 +23,10 @@ type Tools struct {
 	BasicAuth basicauth.IAuth
 	Crypto    crypto.ICrypto
 	Random    random.IRandom
+}
+
+type Clients struct {
+	S3 aws.IS3
 }
 
 type Services struct {

@@ -13,7 +13,10 @@ type Specification struct {
 	JwtSecret         string `required:"true"`
 	BasicAuthUsername string `required:"true"`
 	BasicAuthPassword string `required:"true"`
-	SupabaseKey       string `required:"true"`
+	AwsS3Bucket       string `required:"true"`
+	AwsRegion         string `required:"true"`
+	AwsAccessKey      string `required:"true"`
+	AwsSecretKey      string `required:"true"`
 }
 
 func Load() *Specification {
@@ -56,4 +59,16 @@ func (s *Specification) GetDbPort() int {
 
 func (s *Specification) GetDbDefaultName() string {
 	return s.DbDefaultName
+}
+
+func (s *Specification) GetAwsRegion() string {
+	return s.AwsRegion
+}
+
+func (s *Specification) GetAwsAccessKey() string {
+	return s.AwsAccessKey
+}
+
+func (s *Specification) GetAwsSecretKey() string {
+	return s.AwsSecretKey
 }

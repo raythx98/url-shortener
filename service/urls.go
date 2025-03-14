@@ -4,17 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/raythx98/url-shortener/tools/supabase"
-	"os"
 	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/sqlc/db"
+	"github.com/raythx98/url-shortener/tools/config"
 	"github.com/raythx98/url-shortener/tools/random"
 
 	"github.com/raythx98/gohelpme/errorhelper"
+	"github.com/raythx98/gohelpme/tool/aws"
 	"github.com/raythx98/gohelpme/tool/logger"
 	"github.com/raythx98/gohelpme/tool/reqctx"
 
@@ -31,14 +31,18 @@ type IUrls interface {
 }
 
 type Urls struct {
+	Config *config.Specification
 	Repo   *db.Queries
+	S3     aws.IS3
 	Log    logger.ILogger
 	Random random.IRandom
 }
 
-func NewUrls(repo *db.Queries, log logger.ILogger, random random.IRandom) *Urls {
+func NewUrls(config *config.Specification, repo *db.Queries, s3 aws.IS3, log logger.ILogger, random random.IRandom) *Urls {
 	return &Urls{
+		Config: config,
 		Repo:   repo,
+		S3:     s3,
 		Log:    log,
 		Random: random,
 	}
@@ -182,37 +186,19 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest, origin s
 		return dto.CreateUrlResponse{}, fmt.Errorf("short url cannot be 'api'")
 	}
 
-	//upload file
-	// get origin without 'http://' or 'https://' or `.` or `/` or `:` or `?`
-	fileNamePrefix := strings.ReplaceAll(origin, "http://", "")
-	fileNamePrefix = strings.ReplaceAll(fileNamePrefix, "https://", "")
-	fileNamePrefix = strings.ReplaceAll(fileNamePrefix, ".", "")
-	fileNamePrefix = strings.ReplaceAll(fileNamePrefix, "/", "")
-	fileNamePrefix = strings.ReplaceAll(fileNamePrefix, ":", "")
-	fileNamePrefix = strings.ReplaceAll(fileNamePrefix, "?", "")
-
-	f, err := os.CreateTemp("", "qr-*.png")
-	if err != nil {
-		return dto.CreateUrlResponse{}, err
-	}
-	defer func(name string) {
-		_ = os.Remove(name)
-	}(f.Name()) // clean up
-
-	fileName := fmt.Sprintf("%s-%s", fileNamePrefix, createUrlParams.ShortUrl)
-	fmt.Println("filename: " + fileName)
-
-	err = qrcode.WriteFile(fmt.Sprintf("%s/%s", origin, createUrlParams.ShortUrl),
-		qrcode.Medium, 256, f.Name())
+	encodedFile, err := qrcode.Encode(fmt.Sprintf("%s/%s", origin, createUrlParams.ShortUrl), qrcode.Medium, 256)
 	if err != nil {
 		return dto.CreateUrlResponse{}, err
 	}
 
-	if err := supabase.UpdateFile(fileName, f); err != nil {
+	fileName := fmt.Sprintf("%s.png", createUrlParams.ShortUrl)
+
+	err = s.S3.Upload(ctx, s.Config.AwsS3Bucket, fileName, encodedFile, "image/png")
+	if err != nil {
 		return dto.CreateUrlResponse{}, err
 	}
 
-	createUrlParams.Qr = "https://caqzitwuslrszkfwbmve.supabase.co/storage/v1/object/public/qrs//" + fileName
+	createUrlParams.Qr = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", s.Config.AwsS3Bucket, s.Config.AwsRegion, fileName)
 
 	createdUrl, err := s.Repo.CreateUrl(ctx, createUrlParams)
 	if err != nil {
@@ -222,6 +208,7 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest, origin s
 	return dto.CreateUrlResponse{
 		Id:       createdUrl.ID,
 		ShortUrl: createdUrl.ShortUrl,
+		Qr:       createdUrl.Qr,
 	}, nil
 }
 

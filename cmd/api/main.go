@@ -34,7 +34,11 @@ func main() {
 	defer tool.DbPool.Close()
 
 	repo := resources.RegisterRepos(ctx, tool)
-	svcs := resources.RegisterServices(ctx, repo, tool)
+	clients, err := resources.RegisterClients(ctx, cfg)
+	if err != nil {
+		tool.Log.Fatal(ctx, "failed to create clients", logger.WithError(err))
+	}
+	svcs := resources.RegisterServices(ctx, cfg, repo, clients, tool)
 	ctrls := resources.RegisterControllers(ctx, svcs, tool)
 
 	mux := http.NewServeMux()
@@ -46,7 +50,7 @@ func main() {
 	mux.HandleFunc("/swagger/*", httpSwagger.Handler(httpSwagger.URL(
 		fmt.Sprintf("http://localhost:%d/swagger/doc.json", cfg.ServerPort))))
 
-	err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.ServerPort), mux)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", cfg.ServerPort), mux)
 	if err != nil {
 		tool.Log.Fatal(ctx, "failed to listen and serve", logger.WithError(err))
 	}

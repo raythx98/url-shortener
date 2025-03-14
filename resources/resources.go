@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"github.com/raythx98/url-shortener/tools/supabase"
 	"time"
 
 	"github.com/raythx98/url-shortener/controller"
@@ -11,6 +10,7 @@ import (
 	"github.com/raythx98/url-shortener/tools/config"
 	"github.com/raythx98/url-shortener/tools/zerologger"
 
+	"github.com/raythx98/gohelpme/tool/aws"
 	"github.com/raythx98/gohelpme/tool/basicauth"
 	"github.com/raythx98/gohelpme/tool/crypto"
 	"github.com/raythx98/gohelpme/tool/jwthelper"
@@ -32,20 +32,28 @@ func RegisterControllers(_ context.Context, urlShortenerSvc Services, tools Tool
 	}
 }
 
-func RegisterServices(_ context.Context, urlMappingRepo *db.Queries, tools Tools) Services {
+func RegisterClients(ctx context.Context, config *config.Specification) (Clients, error) {
+	awsTool, err := aws.NewConfig(ctx, config)
+	if err != nil {
+		return Clients{}, err
+	}
+
+	return Clients{
+		S3: aws.NewS3(awsTool),
+	}, nil
+}
+
+func RegisterServices(_ context.Context, config *config.Specification, urlMappingRepo *db.Queries, clients Clients,
+	tools Tools) Services {
 	return Services{
 		auth:      service.NewAuth(urlMappingRepo, tools.Log, tools.Jwt, tools.Crypto),
 		redirects: service.NewRedirects(urlMappingRepo, tools.Log),
-		urls:      service.NewUrls(urlMappingRepo, tools.Log, tools.Random),
+		urls:      service.NewUrls(config, urlMappingRepo, clients.S3, tools.Log, tools.Random),
 		users:     service.NewUsers(urlMappingRepo, tools.Log, tools.Crypto),
 	}
 }
 
 func CreateTools(ctx context.Context, config *config.Specification) Tools {
-
-	// TODO: Simplified implementation, change to AWS S3 later.
-	supabase.New(config.SupabaseKey)
-
 	validate := validator.New()
 	log := zerologger.New(config.Debug)
 	dbPool := postgres.NewPool(ctx, config, log)
