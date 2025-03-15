@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"github.com/raythx98/url-shortener/controller"
+	"github.com/raythx98/url-shortener/repositories"
 	"github.com/raythx98/url-shortener/service"
-	"github.com/raythx98/url-shortener/sqlc/db"
 	"github.com/raythx98/url-shortener/tools/config"
+	"github.com/raythx98/url-shortener/tools/qrcode"
+	"github.com/raythx98/url-shortener/tools/reqctx"
 	"github.com/raythx98/url-shortener/tools/zerologger"
 
 	"github.com/raythx98/gohelpme/tool/aws"
@@ -19,8 +21,8 @@ import (
 	"github.com/raythx98/gohelpme/tool/validator"
 )
 
-func RegisterRepos(_ context.Context, tools Tools) *db.Queries {
-	return db.New(tools.DbPool)
+func RegisterRepos(_ context.Context, tools Tools) Repositories {
+	return Repositories{Repo: repositories.NewRepository(tools.Db)}
 }
 
 func RegisterControllers(_ context.Context, urlShortenerSvc Services, tools Tools) Controllers {
@@ -43,20 +45,20 @@ func RegisterClients(ctx context.Context, config *config.Specification) (Clients
 	}, nil
 }
 
-func RegisterServices(_ context.Context, config *config.Specification, urlMappingRepo *db.Queries, clients Clients,
+func RegisterServices(_ context.Context, config *config.Specification, repo Repositories, clients Clients,
 	tools Tools) Services {
 	return Services{
-		auth:      service.NewAuth(urlMappingRepo, tools.Log, tools.Jwt, tools.Crypto),
-		redirects: service.NewRedirects(urlMappingRepo, tools.Log),
-		urls:      service.NewUrls(config, urlMappingRepo, clients.S3, tools.Log, tools.Random),
-		users:     service.NewUsers(urlMappingRepo, tools.Log, tools.Crypto),
+		auth:      service.NewAuth(repo.Repo, tools.Log, tools.Jwt, tools.Crypto, tools.ReqCtx),
+		redirects: service.NewRedirects(repo.Repo, tools.Log),
+		urls:      service.NewUrls(config, repo.Repo, clients.S3, tools.Log, tools.Random, tools.QrCode, tools.ReqCtx),
+		users:     service.NewUsers(repo.Repo, tools.Log, tools.Crypto, tools.ReqCtx),
 	}
 }
 
 func CreateTools(ctx context.Context, config *config.Specification) Tools {
 	validate := validator.New()
 	log := zerologger.New(config.Debug)
-	dbPool := postgres.NewPool(ctx, config, log)
+	db := postgres.New(ctx, config, log)
 	jwtHelper := jwthelper.New(jwthelper.Config{
 		Issuer:               "raythx98@gmail.com",
 		Audiences:            []string{"raythx98@gmail.com"},
@@ -66,14 +68,18 @@ func CreateTools(ctx context.Context, config *config.Specification) Tools {
 	basicAuth := basicauth.New(config)
 	cryptoTool := crypto.New(crypto.DefaultConfig())
 	randomTool := random.New()
+	qrCode := qrcode.New()
+	reqCtx := reqctx.New()
 
 	return Tools{
 		Validator: validate,
 		Log:       log,
-		DbPool:    dbPool,
+		Db:        db,
 		Jwt:       jwtHelper,
 		BasicAuth: basicAuth,
 		Crypto:    cryptoTool,
 		Random:    randomTool,
+		QrCode:    qrCode,
+		ReqCtx:    reqCtx,
 	}
 }

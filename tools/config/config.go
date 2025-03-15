@@ -61,6 +61,10 @@ func (s *Specification) GetDbDefaultName() string {
 	return s.DbDefaultName
 }
 
+func (s *Specification) GetAwsS3Bucket() string {
+	return s.AwsS3Bucket
+}
+
 func (s *Specification) GetAwsRegion() string {
 	return s.AwsRegion
 }

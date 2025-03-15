@@ -2,25 +2,22 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/raythx98/url-shortener/dto"
+	"github.com/raythx98/url-shortener/repositories"
 	"github.com/raythx98/url-shortener/sqlc/db"
-	"github.com/raythx98/url-shortener/tools/config"
+	"github.com/raythx98/url-shortener/tools/aws"
+	"github.com/raythx98/url-shortener/tools/pghelper"
+	"github.com/raythx98/url-shortener/tools/qrcode"
 	"github.com/raythx98/url-shortener/tools/random"
+	"github.com/raythx98/url-shortener/tools/reqctx"
 
 	"github.com/raythx98/gohelpme/errorhelper"
-	"github.com/raythx98/gohelpme/tool/aws"
 	"github.com/raythx98/gohelpme/tool/logger"
-	"github.com/raythx98/gohelpme/tool/reqctx"
-
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
-	qrcode "github.com/skip2/go-qrcode"
 )
 
 type IUrls interface {
@@ -30,21 +27,31 @@ type IUrls interface {
 	DeleteUrl(ctx context.Context, urlId string) error
 }
 
+type ConfigProvider interface {
+	GetAwsS3Bucket() string
+	GetAwsRegion() string
+}
+
 type Urls struct {
-	Config *config.Specification
-	Repo   *db.Queries
+	Config ConfigProvider
+	Repo   repositories.IRepository
 	S3     aws.IS3
 	Log    logger.ILogger
 	Random random.IRandom
+	QrCode qrcode.IQrCode
+	ReqCtx reqctx.IReqCtx
 }
 
-func NewUrls(config *config.Specification, repo *db.Queries, s3 aws.IS3, log logger.ILogger, random random.IRandom) *Urls {
+func NewUrls(config ConfigProvider, repo repositories.IRepository, s3 aws.IS3, log logger.ILogger,
+	random random.IRandom, qrCode qrcode.IQrCode, reqCtx reqctx.IReqCtx) *Urls {
 	return &Urls{
 		Config: config,
 		Repo:   repo,
 		S3:     s3,
 		Log:    log,
 		Random: random,
+		QrCode: qrCode,
+		ReqCtx: reqCtx,
 	}
 }
 
@@ -59,7 +66,7 @@ func (s *Urls) GetUrl(ctx context.Context, urlId string) (dto.GetUrlResponse, er
 		return dto.GetUrlResponse{}, err
 	}
 
-	redirects, err := s.Repo.GetRedirectsByUrlId(ctx, pgtype.Int8{Int64: parseInt, Valid: true})
+	redirects, err := s.Repo.GetRedirectsByUrlId(ctx, &parseInt)
 	if err != nil {
 		return dto.GetUrlResponse{}, err
 	}
@@ -127,17 +134,17 @@ func (s *Urls) GetUrl(ctx context.Context, urlId string) (dto.GetUrlResponse, er
 }
 
 func (s *Urls) GetUrls(ctx context.Context) (dto.GetUrlsResponse, error) {
-	reqCtx := reqctx.GetValue(ctx)
+	reqCtx := s.ReqCtx.GetValue(ctx)
 	if reqCtx.UserId == nil {
 		return dto.GetUrlsResponse{}, fmt.Errorf("user id not found")
 	}
 
-	urls, err := s.Repo.GetUrlsByUserId(ctx, pgtype.Int8{Int64: *reqCtx.UserId, Valid: true})
+	urls, err := s.Repo.GetUrlsByUserId(ctx, reqCtx.UserId)
 	if err != nil {
 		return dto.GetUrlsResponse{}, err
 	}
 
-	totalClicks, err := s.Repo.GetUserTotalClicks(ctx, pgtype.Int8{Int64: *reqCtx.UserId, Valid: true})
+	totalClicks, err := s.Repo.GetUserTotalClicks(ctx, reqCtx.UserId)
 
 	response := dto.GetUrlsResponse{
 		Urls:        []dto.Url{},
@@ -158,14 +165,14 @@ func (s *Urls) GetUrls(ctx context.Context) (dto.GetUrlsResponse, error) {
 }
 
 func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest, origin string) (dto.CreateUrlResponse, error) {
-	reqCtx := reqctx.GetValue(ctx)
+	reqCtx := s.ReqCtx.GetValue(ctx)
 
 	createUrlParams := db.CreateUrlParams{
 		Title:   req.Title,
 		FullUrl: req.FullUrl,
 	}
 	if reqCtx.UserId != nil {
-		createUrlParams.UserID = pgtype.Int8{Int64: *reqCtx.UserId, Valid: true}
+		createUrlParams.UserID = pghelper.Int8(reqCtx.UserId)
 	}
 
 	if req.CustomUrl != "" {
@@ -174,31 +181,31 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest, origin s
 		createUrlParams.ShortUrl = s.Random.GenerateAlphaNum(8)
 	}
 
-	_, err := s.Repo.GetUrlByShortUrl(ctx, createUrlParams.ShortUrl)
-	if err == nil {
-		return dto.CreateUrlResponse{}, errorhelper.NewAppError(5, "Short url already taken", err)
-	}
-	if !errors.Is(err, pgx.ErrNoRows) {
+	existingUrl, err := s.Repo.GetUrlByShortUrl(ctx, createUrlParams.ShortUrl)
+	if err != nil {
 		return dto.CreateUrlResponse{}, err
+	}
+	if existingUrl != nil {
+		return dto.CreateUrlResponse{}, errorhelper.NewAppError(5, "Short url already taken", err)
 	}
 
 	if strings.EqualFold(createUrlParams.ShortUrl, "api") {
 		return dto.CreateUrlResponse{}, fmt.Errorf("short url cannot be 'api'")
 	}
 
-	encodedFile, err := qrcode.Encode(fmt.Sprintf("%s/%s", origin, createUrlParams.ShortUrl), qrcode.Medium, 256)
+	encodedFile, err := s.QrCode.Encode(fmt.Sprintf("%s/%s", origin, createUrlParams.ShortUrl))
 	if err != nil {
 		return dto.CreateUrlResponse{}, err
 	}
 
 	fileName := fmt.Sprintf("%s.png", createUrlParams.ShortUrl)
 
-	err = s.S3.Upload(ctx, s.Config.AwsS3Bucket, fileName, encodedFile, "image/png")
+	err = s.S3.Upload(ctx, s.Config.GetAwsS3Bucket(), fileName, encodedFile, "image/png")
 	if err != nil {
 		return dto.CreateUrlResponse{}, err
 	}
 
-	createUrlParams.Qr = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", s.Config.AwsS3Bucket, s.Config.AwsRegion, fileName)
+	createUrlParams.Qr = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", s.Config.GetAwsS3Bucket(), s.Config.GetAwsRegion(), fileName)
 
 	createdUrl, err := s.Repo.CreateUrl(ctx, createUrlParams)
 	if err != nil {
@@ -213,7 +220,7 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest, origin s
 }
 
 func (s *Urls) DeleteUrl(ctx context.Context, urlId string) error {
-	reqCtx := reqctx.GetValue(ctx)
+	reqCtx := s.ReqCtx.GetValue(ctx)
 	if reqCtx.UserId == nil {
 		return fmt.Errorf("user id not found")
 	}

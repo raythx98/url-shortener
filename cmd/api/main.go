@@ -31,7 +31,7 @@ func main() {
 	fmt.Printf("configs loaded: %+v\n", cfg)
 
 	tool := resources.CreateTools(ctx, cfg)
-	defer tool.DbPool.Close()
+	defer tool.Db.Pool().Close()
 
 	repo := resources.RegisterRepos(ctx, tool)
 	clients, err := resources.RegisterClients(ctx, cfg)

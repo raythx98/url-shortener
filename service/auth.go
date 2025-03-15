@@ -2,20 +2,18 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 
 	"github.com/raythx98/url-shortener/dto"
+	"github.com/raythx98/url-shortener/repositories"
 	"github.com/raythx98/url-shortener/sqlc/db"
 	"github.com/raythx98/url-shortener/tools/crypto"
+	"github.com/raythx98/url-shortener/tools/reqctx"
 
 	"github.com/raythx98/gohelpme/errorhelper"
 	"github.com/raythx98/gohelpme/tool/jwthelper"
 	"github.com/raythx98/gohelpme/tool/logger"
-	"github.com/raythx98/gohelpme/tool/reqctx"
-
-	"github.com/jackc/pgx/v5"
 )
 
 type IAuth interface {
@@ -25,28 +23,31 @@ type IAuth interface {
 }
 
 type Auth struct {
-	Repo   *db.Queries
+	Repo   repositories.IRepository
 	Jwt    jwthelper.IJwt
 	Log    logger.ILogger
 	Crypto crypto.ICrypto
+	ReqCtx reqctx.IReqCtx
 }
 
-func NewAuth(repo *db.Queries, log logger.ILogger, jwt jwthelper.IJwt, crypto crypto.ICrypto) *Auth {
+func NewAuth(repo repositories.IRepository, log logger.ILogger, jwt jwthelper.IJwt, crypto crypto.ICrypto,
+	reqCtx reqctx.IReqCtx) *Auth {
 	return &Auth{
 		Repo:   repo,
 		Log:    log,
 		Jwt:    jwt,
 		Crypto: crypto,
+		ReqCtx: reqCtx,
 	}
 }
 
 func (s *Auth) Register(ctx context.Context, req dto.RegisterRequest) (dto.LoginResponse, error) {
-	_, err := s.Repo.GetUserByEmail(ctx, req.Email)
-	if err == nil {
-		return dto.LoginResponse{}, errorhelper.NewAppError(1, "Email has already been registered", err)
-	}
-	if !errors.Is(err, pgx.ErrNoRows) {
+	existingUser, err := s.Repo.GetUserByEmail(ctx, req.Email)
+	if err != nil {
 		return dto.LoginResponse{}, err
+	}
+	if existingUser != nil {
+		return dto.LoginResponse{}, errorhelper.NewAppError(1, "Email has already been registered", err)
 	}
 
 	encodedHashedPassword, err := s.Crypto.GenerateFromPassword(req.Password)
@@ -77,11 +78,11 @@ func (s *Auth) Register(ctx context.Context, req dto.RegisterRequest) (dto.Login
 
 func (s *Auth) Login(ctx context.Context, request dto.LoginRequest) (dto.LoginResponse, error) {
 	user, err := s.Repo.GetUserByEmail(ctx, request.Email)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return dto.LoginResponse{}, errorhelper.NewAppError(3, "Email is not registered", err)
-	}
 	if err != nil {
 		return dto.LoginResponse{}, err
+	}
+	if user == nil {
+		return dto.LoginResponse{}, errorhelper.NewAppError(3, "Email is not registered", err)
 	}
 
 	authenticated, err := s.Crypto.ComparePasswordAndHash(request.Password, user.Password)
@@ -107,7 +108,7 @@ func (s *Auth) Login(ctx context.Context, request dto.LoginRequest) (dto.LoginRe
 }
 
 func (s *Auth) Refresh(ctx context.Context) (dto.LoginResponse, error) {
-	reqCtx := reqctx.GetValue(ctx)
+	reqCtx := s.ReqCtx.GetValue(ctx)
 
 	if reqCtx.UserId == nil {
 		return dto.LoginResponse{}, fmt.Errorf("user id not found")

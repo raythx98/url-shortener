@@ -2,16 +2,14 @@ package service
 
 import (
 	"context"
-	"errors"
-
+	
 	"github.com/raythx98/url-shortener/dto"
+	"github.com/raythx98/url-shortener/repositories"
 	"github.com/raythx98/url-shortener/sqlc/db"
+	"github.com/raythx98/url-shortener/tools/pghelper"
 
 	"github.com/raythx98/gohelpme/errorhelper"
 	"github.com/raythx98/gohelpme/tool/logger"
-
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type IRedirects interface {
@@ -19,11 +17,11 @@ type IRedirects interface {
 }
 
 type Redirects struct {
-	Repo *db.Queries
+	Repo repositories.IRepository
 	Log  logger.ILogger
 }
 
-func NewRedirects(repo *db.Queries, log logger.ILogger) *Redirects {
+func NewRedirects(repo repositories.IRepository, log logger.ILogger) *Redirects {
 	return &Redirects{
 		Repo: repo,
 		Log:  log,
@@ -31,16 +29,16 @@ func NewRedirects(repo *db.Queries, log logger.ILogger) *Redirects {
 }
 
 func (s *Redirects) Redirect(ctx context.Context, shortLink string, req dto.RedirectRequest) (dto.RedirectResponse, error) {
-	getUrl, err := s.Repo.GetUrlByShortUrl(ctx, shortLink)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return dto.RedirectResponse{}, errorhelper.NewAppError(4, "Invalid short url, please create a new one", err)
-	}
+	url, err := s.Repo.GetUrlByShortUrl(ctx, shortLink)
 	if err != nil {
 		return dto.RedirectResponse{}, err
 	}
+	if url == nil {
+		return dto.RedirectResponse{}, errorhelper.NewAppError(4, "Invalid short url, please create a new one", err)
+	}
 
 	err = s.Repo.CreateRedirect(ctx, db.CreateRedirectParams{
-		UrlID:   pgtype.Int8{Int64: getUrl.ID, Valid: true},
+		UrlID:   pghelper.Int8(&url.ID),
 		Device:  req.Device,
 		Country: req.Country,
 		City:    req.City,
@@ -50,32 +48,6 @@ func (s *Redirects) Redirect(ctx context.Context, shortLink string, req dto.Redi
 	}
 
 	return dto.RedirectResponse{
-		FullUrl: getUrl.FullUrl,
+		FullUrl: url.FullUrl,
 	}, nil
 }
-
-//func (s *UrlShortener) ShortenUrl(ctx context.Context, req dto.ShortenUrlRequest) (*dto.ShortenUrlResponse, error) {
-//	expireAt := time.Now().UTC().AddDate(1, 0, 0)
-//
-//	params := req.BindTo(db.CreateUrlMappingParams{
-//		ShortenedUrl:     uuid.NewString()[:8],
-//		InactiveExpireAt: pg_helper.NewTime(nil),
-//		MustExpireAt:     pg_helper.NewTime(&expireAt),
-//	})
-//
-//	mapping, err := s.Repo.CreateUrlMapping(ctx, params)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return (&dto.ShortenUrlResponse{}).Bind(mapping), nil
-//}
-//
-//func (s *UrlShortener) GetUrlWithShortened(ctx context.Context, shortenedUrl string) (string, error) {
-//	mapping, err := s.Repo.GetUrlMapping(ctx, shortenedUrl)
-//	if err != nil {
-//		return "", err
-//	}
-//
-//	return mapping.Url, nil
-//}

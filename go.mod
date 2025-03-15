@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/raythx98/gohelpme v0.0.0-20250314093006-8e7de18690af
+	github.com/raythx98/gohelpme v0.0.0-20250315161135-8a611b6c749d
 	github.com/rs/zerolog v1.33.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/swaggo/http-swagger/v2 v2.0.2
