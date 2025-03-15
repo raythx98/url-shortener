@@ -45,8 +45,6 @@ func main() {
 
 	endpoints.Register(mux, ctrls, tool)
 
-	//mux.Handle("/api/v1/url/redirect/{alias}", middleware.Chain(urlShortener.RedirectV2, defaultMiddlewaresAccess...))
-	//mux.Handle("/api/v1/url", middleware.Chain(urlShortener.Shorten, defaultMiddlewaresAccess...))
 	mux.HandleFunc("/swagger/*", httpSwagger.Handler(httpSwagger.URL(
 		fmt.Sprintf("http://localhost:%d/swagger/doc.json", cfg.ServerPort))))
 
