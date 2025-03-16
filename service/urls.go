@@ -14,10 +14,10 @@ import (
 	"github.com/raythx98/url-shortener/tools/pghelper"
 	"github.com/raythx98/url-shortener/tools/qrcode"
 	"github.com/raythx98/url-shortener/tools/random"
-	"github.com/raythx98/url-shortener/tools/reqctx"
 
 	"github.com/raythx98/gohelpme/errorhelper"
 	"github.com/raythx98/gohelpme/tool/logger"
+	"github.com/raythx98/gohelpme/tool/reqctx"
 )
 
 type IUrls interface {
@@ -39,11 +39,10 @@ type Urls struct {
 	Log    logger.ILogger
 	Random random.IRandom
 	QrCode qrcode.IQrCode
-	ReqCtx reqctx.IReqCtx
 }
 
 func NewUrls(config ConfigProvider, repo repositories.IRepository, s3 aws.IS3, log logger.ILogger,
-	random random.IRandom, qrCode qrcode.IQrCode, reqCtx reqctx.IReqCtx) *Urls {
+	random random.IRandom, qrCode qrcode.IQrCode) *Urls {
 	return &Urls{
 		Config: config,
 		Repo:   repo,
@@ -51,7 +50,6 @@ func NewUrls(config ConfigProvider, repo repositories.IRepository, s3 aws.IS3, l
 		Log:    log,
 		Random: random,
 		QrCode: qrCode,
-		ReqCtx: reqCtx,
 	}
 }
 
@@ -134,9 +132,9 @@ func (s *Urls) GetUrl(ctx context.Context, urlId string) (dto.GetUrlResponse, er
 }
 
 func (s *Urls) GetUrls(ctx context.Context) (dto.GetUrlsResponse, error) {
-	reqCtx := s.ReqCtx.GetValue(ctx)
-	if reqCtx.UserId == nil {
-		return dto.GetUrlsResponse{}, fmt.Errorf("user id not found")
+	reqCtx := reqctx.GetValue(ctx)
+	if reqCtx == nil || reqCtx.UserId == nil {
+		return dto.GetUrlsResponse{}, fmt.Errorf("user id not found, reqCtx: %+v", reqCtx)
 	}
 
 	urls, err := s.Repo.GetUrlsByUserId(ctx, reqCtx.UserId)
@@ -165,13 +163,13 @@ func (s *Urls) GetUrls(ctx context.Context) (dto.GetUrlsResponse, error) {
 }
 
 func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest, origin string) (dto.CreateUrlResponse, error) {
-	reqCtx := s.ReqCtx.GetValue(ctx)
+	reqCtx := reqctx.GetValue(ctx)
 
 	createUrlParams := db.CreateUrlParams{
 		Title:   req.Title,
 		FullUrl: req.FullUrl,
 	}
-	if reqCtx.UserId != nil {
+	if reqCtx != nil && reqCtx.UserId != nil {
 		createUrlParams.UserID = pghelper.Int8(reqCtx.UserId)
 	}
 
@@ -220,9 +218,9 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest, origin s
 }
 
 func (s *Urls) DeleteUrl(ctx context.Context, urlId string) error {
-	reqCtx := s.ReqCtx.GetValue(ctx)
-	if reqCtx.UserId == nil {
-		return fmt.Errorf("user id not found")
+	reqCtx := reqctx.GetValue(ctx)
+	if reqCtx == nil || reqCtx.UserId == nil {
+		return fmt.Errorf("user id not found, reqCtx: %+v", reqCtx)
 	}
 
 	parseInt, err := strconv.ParseInt(urlId, 10, 64)

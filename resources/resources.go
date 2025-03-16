@@ -9,7 +9,6 @@ import (
 	"github.com/raythx98/url-shortener/service"
 	"github.com/raythx98/url-shortener/tools/config"
 	"github.com/raythx98/url-shortener/tools/qrcode"
-	"github.com/raythx98/url-shortener/tools/reqctx"
 	"github.com/raythx98/url-shortener/tools/zerologger"
 
 	"github.com/raythx98/gohelpme/tool/aws"
@@ -48,10 +47,10 @@ func RegisterClients(ctx context.Context, config *config.Specification) (Clients
 func RegisterServices(_ context.Context, config *config.Specification, repo Repositories, clients Clients,
 	tools Tools) Services {
 	return Services{
-		auth:      service.NewAuth(repo.Repo, tools.Log, tools.Jwt, tools.Crypto, tools.ReqCtx),
+		auth:      service.NewAuth(repo.Repo, tools.Log, tools.Jwt, tools.Crypto),
 		redirects: service.NewRedirects(repo.Repo, tools.Log),
-		urls:      service.NewUrls(config, repo.Repo, clients.S3, tools.Log, tools.Random, tools.QrCode, tools.ReqCtx),
-		users:     service.NewUsers(repo.Repo, tools.Log, tools.Crypto, tools.ReqCtx),
+		urls:      service.NewUrls(config, repo.Repo, clients.S3, tools.Log, tools.Random, tools.QrCode),
+		users:     service.NewUsers(repo.Repo, tools.Log),
 	}
 }
 
@@ -69,7 +68,6 @@ func CreateTools(ctx context.Context, config *config.Specification) Tools {
 	cryptoTool := crypto.New(crypto.DefaultConfig())
 	randomTool := random.New()
 	qrCode := qrcode.New()
-	reqCtx := reqctx.New()
 
 	return Tools{
 		Validator: validate,
@@ -80,6 +78,5 @@ func CreateTools(ctx context.Context, config *config.Specification) Tools {
 		Crypto:    cryptoTool,
 		Random:    randomTool,
 		QrCode:    qrCode,
-		ReqCtx:    reqCtx,
 	}
 }

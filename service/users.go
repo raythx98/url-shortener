@@ -6,10 +6,9 @@ import (
 
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/repositories"
-	"github.com/raythx98/url-shortener/tools/crypto"
-	"github.com/raythx98/url-shortener/tools/reqctx"
 
 	"github.com/raythx98/gohelpme/tool/logger"
+	"github.com/raythx98/gohelpme/tool/reqctx"
 )
 
 type IUsers interface {
@@ -17,25 +16,21 @@ type IUsers interface {
 }
 
 type Users struct {
-	Repo   repositories.IRepository
-	Log    logger.ILogger
-	Crypto crypto.ICrypto
-	ReqCtx reqctx.IReqCtx
+	Repo repositories.IRepository
+	Log  logger.ILogger
 }
 
-func NewUsers(repo repositories.IRepository, log logger.ILogger, crypto crypto.ICrypto, reqCtx reqctx.IReqCtx) *Users {
+func NewUsers(repo repositories.IRepository, log logger.ILogger) *Users {
 	return &Users{
-		Repo:   repo,
-		Log:    log,
-		Crypto: crypto,
-		ReqCtx: reqCtx,
+		Repo: repo,
+		Log:  log,
 	}
 }
 
 func (s *Users) GetProfile(ctx context.Context) (dto.ProfileResponse, error) {
-	reqCtx := s.ReqCtx.GetValue(ctx)
-	if reqCtx.UserId == nil {
-		return dto.ProfileResponse{}, fmt.Errorf("user id not found")
+	reqCtx := reqctx.GetValue(ctx)
+	if reqCtx == nil || reqCtx.UserId == nil {
+		return dto.ProfileResponse{}, fmt.Errorf("user id not found, reqCtx: %+v", reqCtx)
 	}
 
 	user, err := s.Repo.GetUser(ctx, *reqCtx.UserId)

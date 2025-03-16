@@ -21,6 +21,3 @@ packages:
     github.com/raythx98/url-shortener/tools/random:
         interfaces:
             IRandom:
-    github.com/raythx98/url-shortener/tools/reqctx:
-        interfaces:
-            IReqCtx:

@@ -9,7 +9,6 @@ import (
 	"github.com/raythx98/url-shortener/tools/postgres"
 	"github.com/raythx98/url-shortener/tools/qrcode"
 	"github.com/raythx98/url-shortener/tools/random"
-	"github.com/raythx98/url-shortener/tools/reqctx"
 
 	"github.com/raythx98/gohelpme/tool/basicauth"
 	"github.com/raythx98/gohelpme/tool/jwthelper"
@@ -26,7 +25,6 @@ type Tools struct {
 	Crypto    crypto.ICrypto
 	Random    random.IRandom
 	QrCode    qrcode.IQrCode
-	ReqCtx    reqctx.IReqCtx
 }
 
 type Repositories struct {

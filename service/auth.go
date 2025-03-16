@@ -9,11 +9,11 @@ import (
 	"github.com/raythx98/url-shortener/repositories"
 	"github.com/raythx98/url-shortener/sqlc/db"
 	"github.com/raythx98/url-shortener/tools/crypto"
-	"github.com/raythx98/url-shortener/tools/reqctx"
 
 	"github.com/raythx98/gohelpme/errorhelper"
 	"github.com/raythx98/gohelpme/tool/jwthelper"
 	"github.com/raythx98/gohelpme/tool/logger"
+	"github.com/raythx98/gohelpme/tool/reqctx"
 )
 
 type IAuth interface {
@@ -27,17 +27,14 @@ type Auth struct {
 	Jwt    jwthelper.IJwt
 	Log    logger.ILogger
 	Crypto crypto.ICrypto
-	ReqCtx reqctx.IReqCtx
 }
 
-func NewAuth(repo repositories.IRepository, log logger.ILogger, jwt jwthelper.IJwt, crypto crypto.ICrypto,
-	reqCtx reqctx.IReqCtx) *Auth {
+func NewAuth(repo repositories.IRepository, log logger.ILogger, jwt jwthelper.IJwt, crypto crypto.ICrypto) *Auth {
 	return &Auth{
 		Repo:   repo,
 		Log:    log,
 		Jwt:    jwt,
 		Crypto: crypto,
-		ReqCtx: reqCtx,
 	}
 }
 
@@ -108,10 +105,9 @@ func (s *Auth) Login(ctx context.Context, request dto.LoginRequest) (dto.LoginRe
 }
 
 func (s *Auth) Refresh(ctx context.Context) (dto.LoginResponse, error) {
-	reqCtx := s.ReqCtx.GetValue(ctx)
-
-	if reqCtx.UserId == nil {
-		return dto.LoginResponse{}, fmt.Errorf("user id not found")
+	reqCtx := reqctx.GetValue(ctx)
+	if reqCtx == nil || reqCtx.UserId == nil {
+		return dto.LoginResponse{}, fmt.Errorf("user id not found, reqCtx: %+v", reqCtx)
 	}
 
 	accessToken, err := s.Jwt.NewAccessToken(strconv.FormatInt(*reqCtx.UserId, 10))
