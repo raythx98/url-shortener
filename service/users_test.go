@@ -67,7 +67,7 @@ func TestGetProfile(t *testing.T) {
 			fields:   generateFields(),
 			mocks:    func(args *args, fields *fields) {},
 			wantResp: dto.ProfileResponse{},
-			wantErr:  errors.New("user id not found, reqCtx: &{RequestId: UserId:<nil> IdempotencyKey:<nil> Error:<nil> ErrorStack:}"),
+			wantErr:  errors.New("user id cannot be determined from reqctx"),
 		},
 		{
 			name: "user id not in db",

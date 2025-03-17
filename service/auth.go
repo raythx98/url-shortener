@@ -107,7 +107,7 @@ func (s *Auth) Login(ctx context.Context, request dto.LoginRequest) (dto.LoginRe
 func (s *Auth) Refresh(ctx context.Context) (dto.LoginResponse, error) {
 	reqCtx := reqctx.GetValue(ctx)
 	if reqCtx == nil || reqCtx.UserId == nil {
-		return dto.LoginResponse{}, fmt.Errorf("user id not found, reqCtx: %+v", reqCtx)
+		return dto.LoginResponse{}, fmt.Errorf("user id cannot be determined from reqctx")
 	}
 
 	accessToken, err := s.Jwt.NewAccessToken(strconv.FormatInt(*reqCtx.UserId, 10))

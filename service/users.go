@@ -30,7 +30,7 @@ func NewUsers(repo repositories.IRepository, log logger.ILogger) *Users {
 func (s *Users) GetProfile(ctx context.Context) (dto.ProfileResponse, error) {
 	reqCtx := reqctx.GetValue(ctx)
 	if reqCtx == nil || reqCtx.UserId == nil {
-		return dto.ProfileResponse{}, fmt.Errorf("user id not found, reqCtx: %+v", reqCtx)
+		return dto.ProfileResponse{}, fmt.Errorf("user id cannot be determined from reqctx")
 	}
 
 	user, err := s.Repo.GetUser(ctx, *reqCtx.UserId)
