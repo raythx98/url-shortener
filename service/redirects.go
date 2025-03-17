@@ -49,7 +49,7 @@ func (s *Redirects) Redirect(ctx context.Context, shortLink string, req dto.Redi
 		if err != nil {
 			s.Log.Error(ctx, "create redirect", logger.WithError(err))
 		}
-	}(context.WithTimeout(ctx, 30*time.Second))
+	}(context.WithTimeout(context.Background(), 30*time.Second))
 
 	return dto.RedirectResponse{
 		FullUrl: url.FullUrl,
