@@ -40,7 +40,7 @@ func (r *Repository) CreateRedirect(ctx context.Context, arg db.CreateRedirectPa
 }
 
 func (r *Repository) CreateUrl(ctx context.Context, arg db.CreateUrlParams) (db.Url, error) {
-	return r.CreateUrl(ctx, arg)
+	return r.db.CreateUrl(ctx, arg)
 }
 
 func (r *Repository) CreateUser(ctx context.Context, arg db.CreateUserParams) (db.User, error) {
