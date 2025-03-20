@@ -1,5 +1,148 @@
-basePath: /api/v1
-host: localhost:5051
+basePath: /api
+definitions:
+  dto.Country:
+    properties:
+      count:
+        type: integer
+      country:
+        type: string
+    type: object
+  dto.CreateUrlRequest:
+    properties:
+      custom_url:
+        maxLength: 255
+        minLength: 4
+        type: string
+      full_url:
+        maxLength: 2048
+        type: string
+      title:
+        maxLength: 255
+        type: string
+    required:
+    - full_url
+    - title
+    type: object
+  dto.CreateUrlResponse:
+    properties:
+      id:
+        type: integer
+      qr:
+        type: string
+      short_url:
+        type: string
+    type: object
+  dto.Device:
+    properties:
+      count:
+        type: integer
+      device:
+        type: string
+    type: object
+  dto.GetUrlResponse:
+    properties:
+      countries:
+        items:
+          $ref: '#/definitions/dto.Country'
+        type: array
+      devices:
+        items:
+          $ref: '#/definitions/dto.Device'
+        type: array
+      total_clicks:
+        type: integer
+      url:
+        $ref: '#/definitions/dto.Url'
+    type: object
+  dto.GetUrlsResponse:
+    properties:
+      total_clicks:
+        type: integer
+      urls:
+        items:
+          $ref: '#/definitions/dto.Url'
+        type: array
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 255
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  dto.ProfileResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      role:
+        type: string
+    type: object
+  dto.RedirectRequest:
+    properties:
+      city:
+        type: string
+      country:
+        type: string
+      device:
+        type: string
+    type: object
+  dto.RedirectResponse:
+    properties:
+      full_url:
+        type: string
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 255
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.Url:
+    properties:
+      created_at:
+        type: string
+      full_url:
+        type: string
+      id:
+        type: integer
+      qr:
+        type: string
+      short_url:
+        type: string
+      title:
+        type: string
+    type: object
+  errorhelper.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+    type: object
+host: raythx.com
 info:
   contact:
     email: raythx98@gmail.com
@@ -7,5 +150,367 @@ info:
     url: https://www.raythx.com
   title: URL Shortener Server
   version: "1.0"
-paths: {}
+paths:
+  /auth/v1/login:
+    post:
+      description: Login with email and password
+      parameters:
+      - description: LoginRequest Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "422":
+          description: validation error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+      security:
+      - BasicAuth: []
+      summary: Login
+      tags:
+      - Auth
+  /auth/v1/logout:
+    post:
+      description: Logout session
+      parameters:
+      - description: JWT token use `Bearer <token>`
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ok
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "422":
+          description: validation error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout
+      tags:
+      - Auth
+  /auth/v1/refresh:
+    post:
+      description: Refresh session with refresh token
+      parameters:
+      - description: JWT token use `Bearer <token>`
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "422":
+          description: validation error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Refresh
+      tags:
+      - Auth
+  /auth/v1/register:
+    post:
+      description: Register a new user with account information
+      parameters:
+      - description: Register Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "422":
+          description: validation error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+      security:
+      - BasicAuth: []
+      summary: Register
+      tags:
+      - Auth
+  /urls/v1:
+    get:
+      description: Get User's Urls
+      parameters:
+      - description: JWT token use `Bearer <token>`
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/dto.GetUrlsResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "422":
+          description: validation error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: GetUrls
+      tags:
+      - Urls
+    post:
+      description: Create Shortened Urls
+      parameters:
+      - description: Create Url Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUrlRequest'
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/dto.CreateUrlResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "422":
+          description: validation error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+      security:
+      - BasicAuth: []
+      - BearerAuth: []
+      summary: CreateUrl
+      tags:
+      - Urls
+  /urls/v1/{id}:
+    delete:
+      description: Delete Url
+      parameters:
+      - description: Url Id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ok
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "422":
+          description: validation error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: DeleteUrl
+      tags:
+      - Urls
+    get:
+      description: Get Url details
+      parameters:
+      - description: Url Id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/dto.GetUrlResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "422":
+          description: validation error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: GetUrl
+      tags:
+      - Urls
+  /urls/v1/redirect/{shortLink}:
+    post:
+      description: Redirect a short link to the full URL
+      parameters:
+      - description: Short link
+        in: path
+        name: shortLink
+        required: true
+        type: string
+      - description: Redirect Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RedirectRequest'
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/dto.RedirectResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "422":
+          description: validation error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+      security:
+      - BasicAuth: []
+      summary: Redirect
+      tags:
+      - Redirects
+  /users/v1:
+    get:
+      description: Get User's Profile
+      parameters:
+      - description: JWT token use `Bearer <token>`
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/dto.ProfileResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "422":
+          description: validation error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/errorhelper.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: GetProfile
+      tags:
+      - Users
+securityDefinitions:
+  BasicAuth:
+    type: basic
+  BearerAuth:
+    description: 'Enter your bearer token in the format: Bearer {token}'
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

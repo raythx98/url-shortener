@@ -29,6 +29,18 @@ func NewUsers(service service.IUsers, validate validator.IValidator, log logger.
 	}
 }
 
+// GetProfile
+// @summary 	GetProfile
+// @description Get User's Profile
+// @tags 		Users
+// @param 		Authorization	header 		string 						true	"JWT token use `Bearer <token>`"
+// @success     200             {object}	dto.ProfileResponse    		 		"ok"
+// @failure     400             {object}  	errorhelper.ErrorResponse    		"bad request"
+// @failure     401             {object}  	errorhelper.ErrorResponse    		"unauthorized"
+// @failure     422             {object}  	errorhelper.ErrorResponse    		"validation error"
+// @response    500          	{object}  	errorhelper.ErrorResponse    		"server error"
+// @security 	BearerAuth
+// @router 		/users/v1 [get]
 func (c *Users) GetProfile(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var err error

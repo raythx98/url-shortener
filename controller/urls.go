@@ -34,6 +34,18 @@ func NewUrls(service service.IUrls, validate validator.IValidator, log logger.IL
 	}
 }
 
+// GetUrl
+// @summary 	GetUrl
+// @description Get Url details
+// @tags 		Urls
+// @param       id		path 		string 						true	"Url Id"
+// @success     200		{object}	dto.GetUrlResponse    		 		"ok"
+// @failure     400    	{object}  	errorhelper.ErrorResponse    		"bad request"
+// @failure     401  	{object}  	errorhelper.ErrorResponse    		"unauthorized"
+// @failure     422    	{object}  	errorhelper.ErrorResponse    		"validation error"
+// @response    500   	{object}  	errorhelper.ErrorResponse    		"server error"
+// @security 	BearerAuth
+// @router 		/urls/v1/{id} [get]
 func (c *Urls) GetUrl(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var err error
@@ -56,6 +68,18 @@ func (c *Urls) GetUrl(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(marshal)
 }
 
+// GetUrls
+// @summary 	GetUrls
+// @description Get User's Urls
+// @tags 		Urls
+// @param 		Authorization	header 		string 						true	"JWT token use `Bearer <token>`"
+// @success     200          	{object}	dto.GetUrlsResponse    		 		"ok"
+// @failure     400          	{object}  	errorhelper.ErrorResponse    		"bad request"
+// @failure     401           	{object}  	errorhelper.ErrorResponse    		"unauthorized"
+// @failure     422           	{object}  	errorhelper.ErrorResponse    		"validation error"
+// @response    500          	{object}  	errorhelper.ErrorResponse    		"server error"
+// @security 	BearerAuth
+// @router 		/urls/v1 [get]
 func (c *Urls) GetUrls(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var err error
@@ -77,6 +101,19 @@ func (c *Urls) GetUrls(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(marshal)
 }
 
+// CreateUrl
+// @summary 	CreateUrl
+// @description Create Shortened Urls
+// @tags 		Urls
+// @param       request 	body 		dto.CreateUrlRequest 		true	"Create Url Request"
+// @success     200  		{object}  	dto.CreateUrlResponse        		"ok"
+// @failure     400     	{object}  	errorhelper.ErrorResponse    		"bad request"
+// @failure     401        	{object}  	errorhelper.ErrorResponse    		"unauthorized"
+// @failure     422  		{object}  	errorhelper.ErrorResponse    		"validation error"
+// @response    500        	{object}  	errorhelper.ErrorResponse    		"server error"
+// @security 	BasicAuth
+// @security 	BearerAuth
+// @router 		/urls/v1 [post]
 func (c *Urls) CreateUrl(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var err error
@@ -103,6 +140,18 @@ func (c *Urls) CreateUrl(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(marshal)
 }
 
+// DeleteUrl
+// @summary 	DeleteUrl
+// @description Delete Url
+// @tags 		Urls
+// @param       id		path 		string 						true	"Url Id"
+// @success     200									    		 		"ok"
+// @failure     400    	{object}  	errorhelper.ErrorResponse    		"bad request"
+// @failure     401  	{object}  	errorhelper.ErrorResponse    		"unauthorized"
+// @failure     422    	{object}  	errorhelper.ErrorResponse    		"validation error"
+// @response    500   	{object}  	errorhelper.ErrorResponse    		"server error"
+// @security 	BearerAuth
+// @router 		/urls/v1/{id} [delete]
 func (c *Urls) DeleteUrl(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var err error

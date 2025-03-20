@@ -60,6 +60,11 @@ jobs:
               go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
             fi
           
+            if ! command -v swag &> /dev/null
+            then
+              go install github.com/swaggo/swag/cmd/swag@latest
+            fi
+          
             if ! command -v nginx &> /dev/null
             then
               sudo dnf install -y nginx
@@ -122,6 +127,7 @@ jobs:
           
             cd /tmp/url-shortener
           
+            echo 'APP_URLSHORTENER_STAGE=production' > .env
             echo 'APP_URLSHORTENER_DEBUG=false' > .env
             echo 'APP_URLSHORTENER_SERVERPORT=5051' >> .env
             echo 'APP_URLSHORTENER_DBUSERNAME=postgres' >> .env

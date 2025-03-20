@@ -31,6 +31,19 @@ func NewRedirects(service service.IRedirects, validate validator.IValidator, log
 	}
 }
 
+// Redirect
+// @summary 	Redirect
+// @description Redirect a short link to the full URL
+// @tags 		Redirects
+// @param       shortLink	path 		string 						true	"Short link"
+// @param       request		body 		dto.RedirectRequest 		true	"Redirect Request"
+// @success     200			{object}  	dto.RedirectResponse    	 		"ok"
+// @failure     400			{object}  	errorhelper.ErrorResponse    		"bad request"
+// @failure     401			{object}  	errorhelper.ErrorResponse    		"unauthorized"
+// @failure     422			{object}  	errorhelper.ErrorResponse    		"validation error"
+// @response    500         {object}  	errorhelper.ErrorResponse    		"server error"
+// @security 	BasicAuth
+// @router 		/urls/v1/redirect/{shortLink} [post]
 func (c *Redirects) Redirect(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var err error
@@ -56,29 +69,3 @@ func (c *Redirects) Redirect(w http.ResponseWriter, r *http.Request) {
 
 	_, err = w.Write(marshal)
 }
-
-// Shorten example
-//
-//	@Summary		Shorten URL
-//	@Description	Given a URL and custom settings, shorten it with a unique alias
-//	@ID				shorten-url
-//	@Accept			json
-//	@Produce		json
-//	@Param			req		body		dto.ShortenUrlRequest	true	"Shorten URL Request"
-//	@Success		200		{string}	string					"Ok"
-//	@Failure		422		{object}	dto.ErrorResponse		"Validation Error"
-//	@Failure		500		{object}	dto.ErrorResponse		"Internal Server Error"
-//	@Router			/url [post]
-
-// Redirect example
-//
-//	@Summary		Redirects to full URL
-//	@Description	Given an alias, redirects request to the full URL
-//	@ID				redirect-alias
-//	@Accept			json
-//	@Produce		json
-//	@Param			alias	path		string				true	"Alias"
-//	@Success		303		{string}	interface{}			"Redirected"
-//	@Failure		422		{object}	dto.ErrorResponse	"Validation Error"
-//	@Failure		500		{object}	dto.ErrorResponse	"Internal Server Error"
-//	@Router			/url/redirect/{alias} [post]

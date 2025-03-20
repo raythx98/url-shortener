@@ -1,8 +1,13 @@
 package config
 
-import "github.com/kelseyhightower/envconfig"
+import (
+	"strings"
+
+	"github.com/kelseyhightower/envconfig"
+)
 
 type Specification struct {
+	Stage             string `default:"development"`
 	Debug             bool   `default:"true"`
 	ServerPort        int    `default:"5051"`
 	DbUsername        string `required:"true"`
@@ -23,6 +28,10 @@ func Load() *Specification {
 	var s Specification
 	envconfig.MustProcess("APP_URLSHORTENER", &s)
 	return &s
+}
+
+func (s *Specification) IsDevelopment() bool {
+	return strings.EqualFold(s.Stage, "development")
 }
 
 func (s *Specification) GetHmacSecret() []byte {

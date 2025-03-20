@@ -18,14 +18,799 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/auth/v1/login": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Login with email and password",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "LoginRequest Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "server error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/v1/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Logout session",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "JWT token use ` + "`" + `Bearer \u003ctoken\u003e` + "`" + `",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok"
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "server error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/v1/refresh": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Refresh session with refresh token",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Refresh",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "JWT token use ` + "`" + `Bearer \u003ctoken\u003e` + "`" + `",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "server error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/v1/register": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Register a new user with account information",
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register",
+                "parameters": [
+                    {
+                        "description": "Register Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "server error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/urls/v1": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get User's Urls",
+                "tags": [
+                    "Urls"
+                ],
+                "summary": "GetUrls",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "JWT token use ` + "`" + `Bearer \u003ctoken\u003e` + "`" + `",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetUrlsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "server error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create Shortened Urls",
+                "tags": [
+                    "Urls"
+                ],
+                "summary": "CreateUrl",
+                "parameters": [
+                    {
+                        "description": "Create Url Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateUrlRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateUrlResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "server error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/urls/v1/redirect/{shortLink}": {
+            "post": {
+                "security": [
+                    {
+                        "BasicAuth": []
+                    }
+                ],
+                "description": "Redirect a short link to the full URL",
+                "tags": [
+                    "Redirects"
+                ],
+                "summary": "Redirect",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Short link",
+                        "name": "shortLink",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Redirect Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RedirectRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/dto.RedirectResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "server error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/urls/v1/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get Url details",
+                "tags": [
+                    "Urls"
+                ],
+                "summary": "GetUrl",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Url Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/dto.GetUrlResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "server error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete Url",
+                "tags": [
+                    "Urls"
+                ],
+                "summary": "DeleteUrl",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Url Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok"
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "server error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/v1": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get User's Profile",
+                "tags": [
+                    "Users"
+                ],
+                "summary": "GetProfile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "JWT token use ` + "`" + `Bearer \u003ctoken\u003e` + "`" + `",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "server error",
+                        "schema": {
+                            "$ref": "#/definitions/errorhelper.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.Country": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "country": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateUrlRequest": {
+            "type": "object",
+            "required": [
+                "full_url",
+                "title"
+            ],
+            "properties": {
+                "custom_url": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 4
+                },
+                "full_url": {
+                    "type": "string",
+                    "maxLength": 2048
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
+        "dto.CreateUrlResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "qr": {
+                    "type": "string"
+                },
+                "short_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Device": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "device": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.GetUrlResponse": {
+            "type": "object",
+            "properties": {
+                "countries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Country"
+                    }
+                },
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Device"
+                    }
+                },
+                "total_clicks": {
+                    "type": "integer"
+                },
+                "url": {
+                    "$ref": "#/definitions/dto.Url"
+                }
+            }
+        },
+        "dto.GetUrlsResponse": {
+            "type": "object",
+            "properties": {
+                "total_clicks": {
+                    "type": "integer"
+                },
+                "urls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Url"
+                    }
+                }
+            }
+        },
+        "dto.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 6
+                }
+            }
+        },
+        "dto.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ProfileResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RedirectRequest": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "device": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RedirectResponse": {
+            "type": "object",
+            "properties": {
+                "full_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 6
+                }
+            }
+        },
+        "dto.Url": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "full_url": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "qr": {
+                    "type": "string"
+                },
+                "short_url": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "errorhelper.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
+        },
+        "BearerAuth": {
+            "description": "Enter your bearer token in the format: Bearer {token}",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:5051",
-	BasePath:         "/api/v1",
+	Host:             "raythx.com",
+	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "URL Shortener Server",
 	Description:      "",

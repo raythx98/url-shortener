@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	_ "github.com/raythx98/url-shortener/docs"
+	"github.com/raythx98/url-shortener/docs"
 	"github.com/raythx98/url-shortener/endpoints"
 	"github.com/raythx98/url-shortener/resources"
 	"github.com/raythx98/url-shortener/tools/config"
@@ -22,8 +22,14 @@ import (
 // @contact.url    https://www.raythx.com
 // @contact.email  raythx98@gmail.com
 
-// @host      localhost:5051
-// @BasePath  /api/v1
+// @host      raythx.com
+// @BasePath  /api
+
+// @securityDefinitions.basic  BasicAuth
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter your bearer token in the format: Bearer {token}
 func main() {
 	ctx := context.Background()
 
@@ -45,8 +51,16 @@ func main() {
 
 	endpoints.Register(mux, ctrls, tool)
 
-	mux.HandleFunc("/swagger/*", httpSwagger.Handler(httpSwagger.URL(
-		fmt.Sprintf("http://localhost:%d/swagger/doc.json", cfg.ServerPort))))
+	if cfg.IsDevelopment() {
+		docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.ServerPort)
+	}
+	mux.HandleFunc("/swagger/", func(w http.ResponseWriter, r *http.Request) {
+		protocol := "http"
+		if r.TLS != nil {
+			protocol = "https"
+		}
+		httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("%s://%s/swagger/doc.json", protocol, docs.SwaggerInfo.Host)))(w, r)
+	})
 
 	err = http.ListenAndServe(fmt.Sprintf(":%d", cfg.ServerPort), mux)
 	if err != nil {

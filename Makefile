@@ -35,7 +35,7 @@ format_env:
 migrate_up:
 	migrate -database 'postgres://${APP_URLSHORTENER_DBUSERNAME}:${APP_URLSHORTENER_DBPASSWORD}@localhost:${APP_URLSHORTENER_DBPORT}/${APP_URLSHORTENER_DBDEFAULTNAME}?sslmode=disable' -path migrations up
 
-run: allow_direnv build volume network stop db format_env migrate_up
+run: allow_direnv swagger build volume network stop db format_env migrate_up
 	docker run -d --rm --name url-shortener-app \
 		--net my-network -p ${APP_URLSHORTENER_SERVERPORT}:${APP_URLSHORTENER_SERVERPORT} \
 		--env-file .env url-shortener
