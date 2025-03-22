@@ -92,8 +92,29 @@ An easy way to generate cryptographically secure random strings is to use the fo
 python -c 'import secrets; print(secrets.token_urlsafe(32))'
 ```
 
-### Deploy to EC2
-Use Github Actions to deploy the application to EC2 instance
+### Create EC2
+- Associate an Elastic IP to the EC2 instance
+- Allow SSH, HTTP, HTTPS from all IPs over TCP in the security group
+
+### Configure Swap Space
+AWS Free Tier instances have limited memory of 1GB.
+
+To prevent OOM errors, configure swap space.
+
+SSH to EC2 instance and run the following commands
+```bash
+sudo dd if=/dev/zero of=/swapfile bs=128M count=16 # 2GB swap space (16*128MB)
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+sudo swapon -s # check whether swap space is enabled
+sudo bash -c "echo '/swapfile swap swap defaults 0 0' >> /etc/fstab"
+```
+
+Install `htop` for monitoring
+```bash
+sudo dnf install -y htop
+```
 
 ### Install & Configure CertBot
 SSH to EC2 instance and run the following commands
@@ -104,6 +125,9 @@ sudo systemctl enable --now certbot-renew.timer
 sudo dnf install -y python3-certbot-nginx
 sudo certbot certonly --nginx
 ```
+
+### Deploy to EC2
+Use Github Actions to deploy the application to EC2 instance
 
 ### AWS S3
 1. Create an S3 bucket
@@ -133,19 +157,4 @@ sudo certbot certonly --nginx
     }
   ]
 }
-```
-
-### Configure Swap Space
-AWS Free Tier instances have limited memory of 1GB. 
-
-To prevent OOM errors, configure swap space.
-
-SSH to EC2 instance and run the following commands
-```bash
-sudo dd if=/dev/zero of=/swapfile bs=128M count=16 # 2GB swap space (16*128MB)
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-sudo swapon -s # check whether swap space is enabled
-sudo echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
 ```
