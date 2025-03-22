@@ -122,8 +122,8 @@ jobs:
           
             cd /tmp/url-shortener
           
-            echo 'APP_URLSHORTENER_STAGE=production' > .env
-            echo 'APP_URLSHORTENER_DEBUG=false' > .env
+            echo 'APP_URLSHORTENER_STAGE=production' >> .env
+            echo 'APP_URLSHORTENER_DEBUG=false' >> .env
             echo 'APP_URLSHORTENER_SERVERPORT=5051' >> .env
             echo 'APP_URLSHORTENER_DBUSERNAME=postgres' >> .env
             echo 'APP_URLSHORTENER_DBPASSWORD=${{ secrets.DB_PASSWORD }}' >> .env

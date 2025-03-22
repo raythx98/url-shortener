@@ -51,13 +51,16 @@ func main() {
 
 	endpoints.Register(mux, ctrls, tool)
 
-	protocol := "https"
+	var swaggerUrl string
 	if cfg.IsDevelopment() {
 		docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.ServerPort)
-		protocol = "http"
+		swaggerUrl = "http://localhost:5051/swagger/doc.json"
+	} else {
+		docs.SwaggerInfo.Host = "raythx.com"
+		swaggerUrl = "https://raythx.com/swagger/doc.json"
 	}
 	mux.HandleFunc("/swagger/", func(w http.ResponseWriter, r *http.Request) {
-		httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("%s://%s/swagger/doc.json", protocol, docs.SwaggerInfo.Host)))(w, r)
+		httpSwagger.Handler(httpSwagger.URL(swaggerUrl))(w, r)
 	})
 
 	err = http.ListenAndServe(fmt.Sprintf(":%d", cfg.ServerPort), mux)
