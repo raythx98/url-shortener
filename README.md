@@ -66,8 +66,6 @@ $P \approx 1 - e^{-\frac{(10^6)^2}{2 \times 8.39 \times 10^{17}}}$
 
 $P \approx 0.00006$%
 
-
-
 #### For 1 billion randomly generated URLs, the probability of a collision is significant
 $P \approx 1 - e^{-\frac{(10^9)^2}{2 \times 8.39 \times 10^{17}}}$
 

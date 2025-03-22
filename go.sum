@@ -95,6 +95,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/raythx98/gohelpme v0.0.0-20250317095743-02644c7a68d4 h1:V20TsVR8Bwnh3J8Msjh4+OLSZYYKPhlfuogSr2MJWZw=
 github.com/raythx98/gohelpme v0.0.0-20250317095743-02644c7a68d4/go.mod h1:jqN49m8q+8V8OQeTFrEKcVn/aEPiLcyvNpHtfjS5NlE=
+github.com/raythx98/gohelpme v1.0.0 h1:et4IT2M3H/h97h/47WZrb1jRSj6C/uGiT1zWf8WOND4=
+github.com/raythx98/gohelpme v1.0.0/go.mod h1:jqN49m8q+8V8OQeTFrEKcVn/aEPiLcyvNpHtfjS5NlE=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/rs/xid v1.5.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=
