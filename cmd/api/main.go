@@ -51,14 +51,12 @@ func main() {
 
 	endpoints.Register(mux, ctrls, tool)
 
+	protocol := "https"
 	if cfg.IsDevelopment() {
 		docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.ServerPort)
+		protocol = "http"
 	}
 	mux.HandleFunc("/swagger/", func(w http.ResponseWriter, r *http.Request) {
-		protocol := "http"
-		if r.TLS != nil {
-			protocol = "https"
-		}
 		httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("%s://%s/swagger/doc.json", protocol, docs.SwaggerInfo.Host)))(w, r)
 	})
 
