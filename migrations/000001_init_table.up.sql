@@ -20,12 +20,13 @@ create table if not exists urls
         on delete set null on update cascade
 );
 
+create index if not exists idx_urls_user_id_created_at_active
+    on urls (user_id, created_at desc)
+    where is_deleted = false;
+
 create unique index if not exists urls_short_url_active_unique
     on urls (short_url)
     where is_deleted = false;
-
-create index if not exists urls_user_id_is_deleted
-    on urls (user_id, is_deleted);
 
 create table if not exists redirects
 (

@@ -15,7 +15,6 @@ func Register(mux *http.ServeMux, ctrls resources.Controllers, tools resources.T
 	mux.HandleFunc("OPTIONS /api/", middleware.Chain(ctrls.Auth.Register, middleware.CORS))
 
 	mux.HandleFunc("POST /api/auth/v1/register", middleware.Chain(ctrls.Auth.Register, middlewares.DefaultBasicToken...))
-	mux.HandleFunc("GET /api/users/v1", middleware.Chain(ctrls.Users.GetProfile, middlewares.DefaultAccessToken...))
 
 	mux.HandleFunc("POST /api/auth/v1/login", middleware.Chain(ctrls.Auth.Login, middlewares.DefaultBasicToken...))
 	mux.HandleFunc("POST /api/auth/v1/refresh", middleware.Chain(ctrls.Auth.Refresh, middlewares.DefaultRefreshToken...))

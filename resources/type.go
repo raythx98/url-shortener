@@ -35,12 +35,10 @@ type Services struct {
 	auth      service.IAuth
 	redirects service.IRedirects
 	urls      service.IUrls
-	users     service.IUsers
 }
 
 type Controllers struct {
 	Auth      controller.IAuth
 	Redirects controller.IRedirects
 	Urls      controller.IUrls
-	Users     controller.IUsers
 }

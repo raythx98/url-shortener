@@ -81,15 +81,6 @@ definitions:
       refresh_token:
         type: string
     type: object
-  dto.ProfileResponse:
-    properties:
-      email:
-        type: string
-      id:
-        type: integer
-      role:
-        type: string
-    type: object
   dto.RedirectRequest:
     properties:
       city:
@@ -466,41 +457,6 @@ paths:
       summary: Redirect
       tags:
       - Redirects
-  /users/v1:
-    get:
-      description: Get User's Profile
-      parameters:
-      - description: JWT token use `Bearer <token>`
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      responses:
-        "200":
-          description: ok
-          schema:
-            $ref: '#/definitions/dto.ProfileResponse'
-        "400":
-          description: bad request
-          schema:
-            $ref: '#/definitions/errorhelper.ErrorResponse'
-        "401":
-          description: unauthorized
-          schema:
-            $ref: '#/definitions/errorhelper.ErrorResponse'
-        "422":
-          description: validation error
-          schema:
-            $ref: '#/definitions/errorhelper.ErrorResponse'
-        "500":
-          description: server error
-          schema:
-            $ref: '#/definitions/errorhelper.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: GetProfile
-      tags:
-      - Users
 securityDefinitions:
   BasicAuth:
     type: basic

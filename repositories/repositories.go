@@ -20,7 +20,6 @@ type IRepository interface {
 	GetUrl(ctx context.Context, id int64) (db.Url, error)
 	GetUrlByShortUrl(ctx context.Context, shortUrl string) (*db.Url, error)
 	GetUrlsByUserId(ctx context.Context, userId *int64) ([]db.Url, error)
-	GetUser(ctx context.Context, id int64) (db.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*db.User, error)
 	GetUserTotalClicks(ctx context.Context, userId *int64) (int64, error)
 }
@@ -74,10 +73,6 @@ func (r *Repository) GetUrlByShortUrl(ctx context.Context, shortUrl string) (*db
 
 func (r *Repository) GetUrlsByUserId(ctx context.Context, userId *int64) ([]db.Url, error) {
 	return r.db.GetUrlsByUserId(ctx, pghelper.Int8(userId))
-}
-
-func (r *Repository) GetUser(ctx context.Context, id int64) (db.User, error) {
-	return r.db.GetUser(ctx, id)
 }
 
 func (r *Repository) GetUserByEmail(ctx context.Context, email string) (*db.User, error) {

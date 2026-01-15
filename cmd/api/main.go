@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/raythx98/url-shortener/docs"
 	"github.com/raythx98/url-shortener/endpoints"
@@ -63,9 +67,30 @@ func main() {
 		httpSwagger.Handler(httpSwagger.URL(swaggerUrl))(w, r)
 	})
 
-	err = http.ListenAndServe(fmt.Sprintf(":%d", cfg.ServerPort), mux)
-	if err != nil {
-		tool.Log.Fatal(ctx, "failed to listen and serve", logger.WithError(err))
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", cfg.ServerPort),
+		Handler: mux,
+	}
+
+	go func() {
+		tool.Log.Info(ctx, "Server starting", logger.WithField("port", cfg.ServerPort))
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			tool.Log.Fatal(ctx, "failed to listen and serve", logger.WithError(err))
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	tool.Log.Info(ctx, "Server is shutting down...")
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		tool.Log.Fatal(ctx, "Server forced to shutdown", logger.WithError(err))
 	}
 
 	tool.Log.Info(ctx, "Server stopped")

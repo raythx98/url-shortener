@@ -9,12 +9,6 @@ from users
 where email = $1
   and is_active = true;
 
--- name: GetUser :one
-select *
-from users
-where id = $1
-  and is_active = true;
-
 -- name: CreateUrl :one
 insert into urls (user_id, title, short_url, full_url)
 values ($1, $2, $3, $4)
@@ -35,7 +29,8 @@ where id = $1
 select *
 from urls
 where user_id = $1
-  and is_deleted = false;
+  and is_deleted = false
+order by created_at desc;
 
 -- name: GetUserTotalClicks :one
 select count(*)

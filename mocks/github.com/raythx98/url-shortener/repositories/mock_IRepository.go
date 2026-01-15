@@ -464,63 +464,6 @@ func (_c *MockIRepository_GetUrlsByUserId_Call) RunAndReturn(run func(context.Co
 	return _c
 }
 
-// GetUser provides a mock function with given fields: ctx, id
-func (_m *MockIRepository) GetUser(ctx context.Context, id int64) (db.User, error) {
-	ret := _m.Called(ctx, id)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetUser")
-	}
-
-	var r0 db.User
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) (db.User, error)); ok {
-		return rf(ctx, id)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64) db.User); ok {
-		r0 = rf(ctx, id)
-	} else {
-		r0 = ret.Get(0).(db.User)
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
-		r1 = rf(ctx, id)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// MockIRepository_GetUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUser'
-type MockIRepository_GetUser_Call struct {
-	*mock.Call
-}
-
-// GetUser is a helper method to define mock.On call
-//   - ctx context.Context
-//   - id int64
-func (_e *MockIRepository_Expecter) GetUser(ctx interface{}, id interface{}) *MockIRepository_GetUser_Call {
-	return &MockIRepository_GetUser_Call{Call: _e.mock.On("GetUser", ctx, id)}
-}
-
-func (_c *MockIRepository_GetUser_Call) Run(run func(ctx context.Context, id int64)) *MockIRepository_GetUser_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64))
-	})
-	return _c
-}
-
-func (_c *MockIRepository_GetUser_Call) Return(_a0 db.User, _a1 error) *MockIRepository_GetUser_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *MockIRepository_GetUser_Call) RunAndReturn(run func(context.Context, int64) (db.User, error)) *MockIRepository_GetUser_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetUserByEmail provides a mock function with given fields: ctx, email
 func (_m *MockIRepository) GetUserByEmail(ctx context.Context, email string) (*db.User, error) {
 	ret := _m.Called(ctx, email)

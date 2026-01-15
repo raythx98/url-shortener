@@ -514,61 +514,6 @@
                     }
                 }
             }
-        },
-        "/users/v1": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get User's Profile",
-                "tags": [
-                    "Users"
-                ],
-                "summary": "GetProfile",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "JWT token use `Bearer \u003ctoken\u003e`",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "ok",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ProfileResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "bad request",
-                        "schema": {
-                            "$ref": "#/definitions/errorhelper.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/errorhelper.ErrorResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "validation error",
-                        "schema": {
-                            "$ref": "#/definitions/errorhelper.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "server error",
-                        "schema": {
-                            "$ref": "#/definitions/errorhelper.ErrorResponse"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -689,20 +634,6 @@
                     "type": "string"
                 },
                 "refresh_token": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.ProfileResponse": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "role": {
                     "type": "string"
                 }
             }

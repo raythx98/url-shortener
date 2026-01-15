@@ -1,7 +1,7 @@
 package dto
 
 type CreateUrlRequest struct {
-	Title     string `json:"title" validate:"required,max=255"`
+	Title     string `json:"title" validate:"max=255"`
 	FullUrl   string `json:"full_url" validate:"required,max=2048"`
 	CustomUrl string `json:"custom_url" validate:"omitempty,min=4,max=255,alphanum"`
 }

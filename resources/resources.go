@@ -27,7 +27,6 @@ func RegisterControllers(_ context.Context, urlShortenerSvc Services, tools Tool
 		Auth:      controller.NewAuth(urlShortenerSvc.auth, tools.Validator, tools.Log),
 		Redirects: controller.NewRedirects(urlShortenerSvc.redirects, tools.Validator, tools.Log),
 		Urls:      controller.NewUrls(urlShortenerSvc.urls, tools.Validator, tools.Log),
-		Users:     controller.NewUsers(urlShortenerSvc.users, tools.Validator, tools.Log),
 	}
 }
 
@@ -41,7 +40,6 @@ func RegisterServices(_ context.Context, config *config.Specification, repo Repo
 		auth:      service.NewAuth(repo.Repo, tools.Log, tools.Jwt, tools.Crypto),
 		redirects: service.NewRedirects(repo.Repo, tools.Log),
 		urls:      service.NewUrls(config, repo.Repo, tools.Log, tools.Random),
-		users:     service.NewUsers(repo.Repo, tools.Log),
 	}
 }
 

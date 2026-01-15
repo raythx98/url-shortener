@@ -1,0 +1,37 @@
+default:
+  rate: 1
+  burst: 2
+
+operations:
+  # Auth - Strict
+  POST:/api/auth/v1/register:
+    rate: 1
+    burst: 1
+  POST:/api/auth/v1/login:
+    rate: 1
+    burst: 1
+  POST:/api/auth/v1/refresh:
+    rate: 1
+    burst: 5
+  POST:/api/auth/v1/logout:
+    rate: 1
+    burst: 5
+
+  # URLs - Moderate
+  GET:/api/urls/v1:
+    rate: 5
+    burst: 10
+  POST:/api/urls/v1:
+    rate: 5
+    burst: 10
+  GET:/api/urls/v1/{id}:
+    rate: 5
+    burst: 10
+  DELETE:/api/urls/v1/{id}:
+    rate: 5
+    burst: 10
+
+  # Redirects - Higher throughput
+  POST:/api/urls/v1/redirect/{shortLink}:
+    rate: 10
+    burst: 20
