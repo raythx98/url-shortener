@@ -9,5 +9,4 @@ type CreateUrlRequest struct {
 type CreateUrlResponse struct {
 	Id       int64  `json:"id"`
 	ShortUrl string `json:"short_url"`
-	Qr       string `json:"qr"`
 }

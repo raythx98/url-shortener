@@ -1,0 +1,176 @@
+name: Deploy to Cloud
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-to-cloud
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '>=1.24.11'
+
+#      - name: Build project
+#        run: go build ./...
+#
+#      - name: Run tests
+#        run: go test ./...
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Configure Cloud Instance (Updates, Docker, Firewall, Swap)
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            set -e
+          
+            # Allow lingering, prevent podman socket from stopping on logout
+            sudo loginctl enable-linger ${{ secrets.DEPLOY_USER }}
+          
+            # Update system packages
+            echo "Updating system packages..."
+            sudo dnf update -y --exclude=tuned,tuned-profiles-oci
+            
+            # 1. System Updates & Basic Tools
+            if ! command -v git &> /dev/null; then
+              echo "Installing Git..."
+              sudo dnf install -y git
+            else
+              echo "Git already installed."
+            fi
+
+            if ! command -v podman &> /dev/null; then
+              echo "Installing Podman..."
+              sudo dnf install -y podman
+            else
+              echo "Podman already installed."
+            fi
+          
+            # 2. Firewall Configuration
+            echo "Configuring firewall..."
+            sudo firewall-cmd --add-service=http --permanent
+            sudo firewall-cmd --add-service=https --permanent
+            sudo firewall-cmd --reload
+          
+            # 3. Configure `Docker` to use `Podman`
+            sudo alternatives --install /usr/bin/docker docker /usr/bin/podman 1
+
+            # 3.1 Allow rootless containers to bind to privileged ports (80, 443)
+            if ! grep -q "net.ipv4.ip_unprivileged_port_start=80" /etc/sysctl.conf; then
+              echo "Configuring privileged port access for rootless mode..."
+              echo "net.ipv4.ip_unprivileged_port_start=80" | sudo tee -a /etc/sysctl.conf
+              sudo sysctl -p
+            fi
+
+            # 4. Ensure Podman socket is running
+            if ! systemctl is-active --quiet podman.socket; then
+              echo "Starting Podman socket..."
+              sudo systemctl start podman.socket
+              systemctl --user enable --now podman.socket
+            fi
+
+            # 5. Configure DOCKER_HOST for Podman
+            if ! grep -q "DOCKER_HOST" ~/.bashrc; then
+              echo 'export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/podman/podman.sock' >> ~/.bashrc
+              echo "DOCKER_HOST added to ~/.bashrc"
+              source ~/.bashrc
+            fi
+
+            # 6. Install Docker Compose Plugin (if missing)
+            if ! docker compose version &> /dev/null; then
+              echo "Installing Docker Compose plugin..."
+              COMPOSE_VERSION="v2.33.1"
+              sudo mkdir -p /usr/local/lib/docker/cli-plugins/
+              sudo curl -SL "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-aarch64" -o /usr/local/lib/docker/cli-plugins/docker-compose
+              sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+            fi
+          EOF
+
+      - name: Clone and Deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            set -e
+            PROJECT_DIR="/home/${{ secrets.DEPLOY_USER }}/url-shortener"
+            
+            if [ -d "$PROJECT_DIR" ]; then
+              cd "$PROJECT_DIR"
+              git fetch origin main
+              git reset --hard origin/main
+            else
+              git clone https://github.com/${{ github.repository }}.git "$PROJECT_DIR"
+              cd "$PROJECT_DIR"
+            fi
+            
+            # Create .env file for Docker Compose
+            printf "APP_URLSHORTENER_STAGE=production\n\
+            APP_URLSHORTENER_DEBUG=false\n\
+            APP_URLSHORTENER_SERVERPORT=8080\n\
+            APP_URLSHORTENER_DBUSERNAME=postgres\n\
+            APP_URLSHORTENER_DBPASSWORD=${{ secrets.DB_PASSWORD }}\n\
+            APP_URLSHORTENER_DBHOST=db\n\
+            APP_URLSHORTENER_DBPORT=5432\n\
+            APP_URLSHORTENER_DBDEFAULTNAME=postgres\n\
+            APP_URLSHORTENER_JWTSECRET=${{ secrets.JWT_SECRET }}\n\
+            APP_URLSHORTENER_BASICAUTHUSERNAME=raythx-url-shortener\n\
+            APP_URLSHORTENER_BASICAUTHPASSWORD=${{ secrets.BASIC_AUTH_PASSWORD }}\n" > .env
+            
+            # Start services and capture immediate failures
+            source ~/.bashrc
+            
+            # 1. Build images first (Old app keeps running)
+            if ! docker compose build; then
+                echo "ERROR: Build failed."
+                exit 1
+            fi
+
+            # 2. Run migrations explicitly (Old app keeps running)
+            echo "Running migrations..."
+            if ! docker compose up migrate; then
+                echo "ERROR: Migrations failed. Aborting deployment."
+                docker compose logs migrate
+                exit 1
+            fi
+            
+            # 3. Update App (Downtime starts here, lasts only for restart)
+            echo "Deploying application..."
+            if ! docker compose up -d; then
+              echo "ERROR: Docker Compose failed to start services."
+              echo "--- Container States ---"
+              docker compose ps -a
+              echo "--- Logs (if any) ---"
+              docker compose logs
+              exit 1
+            fi
+          
+            echo "--- Container States ---"
+            docker compose ps -a
+            echo "--- Logs (if any) ---"
+            docker compose logs
+            
+            if ! docker compose ps app | grep -q "Up"; then
+              echo "ERROR: App is not running."
+              docker compose logs app
+              exit 1
+            fi
+
+            # Cleanup: Prune images and builders, but NOT volumes to protect the DB
+            docker image prune -f
+            docker builder prune -f
+          EOF

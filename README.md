@@ -2,42 +2,23 @@
 
 ## Tech Stack
 
-File Storage: AWS S3
-
-Reverse Proxy: Nginx
+Reverse Proxy: Caddy (Automatic HTTPS)
 
 Backend: Go, Postgres
 
-CA: Let's Encrypt (CertBot)
+CA: Let's Encrypt (via Caddy)
 
 ## Design Considerations
 
 ### Architecture
-If budget wasn’t a constraint, I would have designed my architecture for high 
-availability, scalability, and performance using AWS managed services.
+The architecture has been migrated to a containerized setup orchestrated by Docker Compose, running on Oracle Cloud Infrastructure (OCI).
 
-For the frontend, I would have used Amazon S3 to store static assets, combined with 
-CloudFront as a CDN to distribute content efficiently worldwide, reducing latency. 
-This setup ensures faster load times and offloads traffic from backend services.
+- **Caddy**: Acts as the reverse proxy and handles automatic HTTPS certificate management.
+- **App**: The Go backend service.
+- **DB**: PostgreSQL database.
+- **Migrate**: Runs database migrations on startup.
 
-For request routing, I would have fronted my domain with either an API Gateway or an 
-Application Load Balancer (ALB) to manage incoming traffic. This would allow better 
-routing to different services (frontend, backend, authentication, etc.) and improve 
-security and performance.
-
-On the backend, I would have used Amazon Aurora (or RDS) for the database. Aurora 
-offers automatic scaling, high availability, automated backups, and disaster 
-recovery, making it a more robust solution than self-managed databases.
-
-However, due to AWS Free Tier limitations, I opted for a more cost-effective approach 
-by deploying everything on a single EC2 instance. This instance:
-- Acts as a reverse proxy, handling incoming traffic.
-- Hosts static frontend files directly.
-- Runs multiple containers for the backend server and database.
-
-This setup allows me to keep costs minimal while still maintaining some level of 
-separation between services. However, it comes with trade-offs like limited 
-scalability, single point of failure, and manual management of backups and failover.
+This setup is deployed on a single OCI instance using Podman (daemonless Docker alternative) for enhanced security and `docker-compose` for orchestration.
 
 ### Short URL Collision
 
@@ -76,15 +57,15 @@ To mitigate this risk when site traffic increases, we can:
 - Implement a database uniqueness check to prevent collisions.
 
 ## Infrastructure Setup 
-You will need to set up the following in Github Secrets
-- AWS_ACCESS_KEY
-- AWS_SECRET_KEY
-- BASIC_AUTH_PASSWORD
-- DB_PASSWORD
-- EC2_HOST
-- EC2_USER
-- JWT_SECRET
-- SSH_PRIVATE_KEY
+
+### GitHub Secrets
+You will need to set up the following in Github Secrets:
+- `BASIC_AUTH_PASSWORD`
+- `DB_PASSWORD`
+- `DEPLOY_HOST` (OCI Instance IP)
+- `DEPLOY_USER` (OCI Instance Username, e.g., `opc`)
+- `JWT_SECRET`
+- `SSH_PRIVATE_KEY`
 
 ### Generate Secrets
 An easy way to generate cryptographically secure random strings is to use the following command:
@@ -92,69 +73,36 @@ An easy way to generate cryptographically secure random strings is to use the fo
 python -c 'import secrets; print(secrets.token_urlsafe(32))'
 ```
 
-### Create EC2
-- Associate an Elastic IP to the EC2 instance
-- Allow SSH, HTTP, HTTPS from all IPs over TCP in the security group
+### OCI Instance Setup (Automated via Workflow)
+The GitHub Action workflow automatically handles most of the instance configuration, including:
+- Updating system packages.
+- Configuring the firewall (ports 80, 443).
+- Installing and configuring Podman to emulate Docker.
+- Enabling rootless containers to bind to privileged ports.
+- Installing the Docker Compose plugin.
 
-### Configure Swap Space
-AWS Free Tier instances have limited memory of 1GB.
+### Local Development
+To run the project locally:
 
-To prevent OOM errors, configure swap space.
+1.  **Environment Variables**: Create a `.env` file based on the example in the CI/CD workflow or `Makefile` defaults (though `docker-compose.yaml` uses `.env`).
 
-SSH to EC2 instance and run the following commands
-```bash
-sudo dd if=/dev/zero of=/swapfile bs=128M count=16 # 2GB swap space (16*128MB)
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-sudo swapon -s # check whether swap space is enabled
-sudo bash -c "echo '/swapfile swap swap defaults 0 0' >> /etc/fstab"
-```
+2.  **Run with Docker Compose**:
+    ```bash
+    make up
+    ```
+    This will start the App, DB, Migration, and Caddy services.
 
-Install `htop` for monitoring
-```bash
-sudo dnf install -y htop
-```
+3.  **View Logs**:
+    ```bash
+    make logs
+    ```
 
-### Install & Configure CertBot
-SSH to EC2 instance and run the following commands
-```bash
-sudo dnf install -y certbot
-sudo systecmtl daemon-reload
-sudo systemctl enable --now certbot-renew.timer
-sudo dnf install -y python3-certbot-nginx
-sudo certbot certonly --nginx
-```
+4.  **Stop**:
+    ```bash
+    make down
+    ```
 
-### Deploy to EC2
-Use Github Actions to deploy the application to EC2 instance
+### Manual Deployment (Reference)
+The deployment is handled by `.github/workflows/deploy.yml`. It uses SSH to connect to the OCI instance, pulls the latest code, builds the images using Podman (via Docker alias), and restarts the services using `docker compose`.
 
-### AWS S3
-1. Create an S3 bucket
-2. Disable Bucket default ACL (to allow public read)
-3. Create IAM Role in AWS that allows PutObject to the S3 bucket
-4. Configure the following bucket policy
-```json
-{
-  "Version": "2012-10-17",
-  "Id": "Policy1741884123207",
-  "Statement": [
-    {
-      "Sid": "Stmt1741884121169",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::<BUCKETNAME>/*"
-    },
-    {
-      "Sid": "Statement1",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "<IAM_ARN>"
-      },
-      "Action": "s3:PutObject",
-      "Resource": "arn:aws:s3:::<BUCKETNAME>/*"
-    }
-  ]
-}
 ```

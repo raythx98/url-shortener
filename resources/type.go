@@ -4,10 +4,8 @@ import (
 	"github.com/raythx98/url-shortener/controller"
 	"github.com/raythx98/url-shortener/repositories"
 	"github.com/raythx98/url-shortener/service"
-	"github.com/raythx98/url-shortener/tools/aws"
 	"github.com/raythx98/url-shortener/tools/crypto"
 	"github.com/raythx98/url-shortener/tools/postgres"
-	"github.com/raythx98/url-shortener/tools/qrcode"
 	"github.com/raythx98/url-shortener/tools/random"
 
 	"github.com/raythx98/gohelpme/tool/basicauth"
@@ -24,7 +22,6 @@ type Tools struct {
 	BasicAuth basicauth.IAuth
 	Crypto    crypto.ICrypto
 	Random    random.IRandom
-	QrCode    qrcode.IQrCode
 }
 
 type Repositories struct {
@@ -32,7 +29,6 @@ type Repositories struct {
 }
 
 type Clients struct {
-	S3 aws.IS3
 }
 
 type Services struct {

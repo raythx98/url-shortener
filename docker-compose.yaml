@@ -1,0 +1,66 @@
+services:
+  caddy:
+    image: caddy:alpine
+    container_name: url-shortener-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:z
+      - caddy_data:/data
+      - caddy_config:/config
+
+  app:
+    build: .
+    container_name: url-shortener-app
+    restart: always
+    ports:
+      - "${APP_URLSHORTENER_SERVERPORT}:8080"
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  migrate:
+    image: migrate/migrate
+    container_name: url-shortener-migrate
+    user: root
+    volumes:
+      - ./migrations:/migrations:z
+    env_file: .env
+    command:
+      - "-path=/migrations"
+      - "-database"
+      - "postgres://${APP_URLSHORTENER_DBUSERNAME}:${APP_URLSHORTENER_DBPASSWORD}@db:5432/${APP_URLSHORTENER_DBDEFAULTNAME}?sslmode=disable"
+      - "up"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17-alpine
+    container_name: url-shortener-db
+    restart: always
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${APP_URLSHORTENER_DBUSERNAME}
+      POSTGRES_PASSWORD: ${APP_URLSHORTENER_DBPASSWORD}
+      POSTGRES_DB: ${APP_URLSHORTENER_DBDEFAULTNAME}
+    ports:
+      - "${APP_URLSHORTENER_DBPORT}:5432"
+    volumes:
+      - local-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  local-postgres:
+  caddy_data:
+  caddy_config:

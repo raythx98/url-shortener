@@ -611,9 +611,6 @@
                 "id": {
                     "type": "integer"
                 },
-                "qr": {
-                    "type": "string"
-                },
                 "short_url": {
                     "type": "string"
                 }
@@ -761,9 +758,6 @@
                 },
                 "id": {
                     "type": "integer"
-                },
-                "qr": {
-                    "type": "string"
                 },
                 "short_url": {
                     "type": "string"

@@ -9,9 +9,7 @@ import (
 	"github.com/raythx98/url-shortener/dto"
 	"github.com/raythx98/url-shortener/repositories"
 	"github.com/raythx98/url-shortener/sqlc/db"
-	"github.com/raythx98/url-shortener/tools/aws"
 	"github.com/raythx98/url-shortener/tools/pghelper"
-	"github.com/raythx98/url-shortener/tools/qrcode"
 	"github.com/raythx98/url-shortener/tools/random"
 
 	"github.com/raythx98/gohelpme/errorhelper"
@@ -27,28 +25,22 @@ type IUrls interface {
 }
 
 type ConfigProvider interface {
-	GetAwsS3Bucket() string
-	GetAwsRegion() string
 }
 
 type Urls struct {
 	Config ConfigProvider
 	Repo   repositories.IRepository
-	S3     aws.IS3
 	Log    logger.ILogger
 	Random random.IRandom
-	QrCode qrcode.IQrCode
 }
 
-func NewUrls(config ConfigProvider, repo repositories.IRepository, s3 aws.IS3, log logger.ILogger,
-	random random.IRandom, qrCode qrcode.IQrCode) *Urls {
+func NewUrls(config ConfigProvider, repo repositories.IRepository, log logger.ILogger,
+	random random.IRandom) *Urls {
 	return &Urls{
 		Config: config,
 		Repo:   repo,
-		S3:     s3,
 		Log:    log,
 		Random: random,
-		QrCode: qrCode,
 	}
 }
 
@@ -122,7 +114,6 @@ func (s *Urls) GetUrl(ctx context.Context, urlId string) (dto.GetUrlResponse, er
 			Title:     getUrl.Title,
 			ShortUrl:  getUrl.ShortUrl,
 			FullUrl:   getUrl.FullUrl,
-			Qr:        getUrl.Qr,
 			CreatedAt: getUrl.CreatedAt.Time,
 		},
 		Devices:     unsortedDevices[:min(5, len(unsortedDevices))],
@@ -158,7 +149,6 @@ func (s *Urls) GetUrls(ctx context.Context) (dto.GetUrlsResponse, error) {
 			Title:     each.Title,
 			ShortUrl:  each.ShortUrl,
 			FullUrl:   each.FullUrl,
-			Qr:        each.Qr,
 			CreatedAt: each.CreatedAt.Time,
 		})
 	}
@@ -190,20 +180,6 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest, origin s
 		return dto.CreateUrlResponse{}, errorhelper.NewAppError(5, "Short url already taken", err)
 	}
 
-	encodedFile, err := s.QrCode.Encode(fmt.Sprintf("%s/%s", origin, createUrlParams.ShortUrl))
-	if err != nil {
-		return dto.CreateUrlResponse{}, err
-	}
-
-	fileName := fmt.Sprintf("%s.png", createUrlParams.ShortUrl)
-
-	err = s.S3.Upload(ctx, s.Config.GetAwsS3Bucket(), fileName, encodedFile, "image/png")
-	if err != nil {
-		return dto.CreateUrlResponse{}, err
-	}
-
-	createUrlParams.Qr = fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", s.Config.GetAwsS3Bucket(), s.Config.GetAwsRegion(), fileName)
-
 	createdUrl, err := s.Repo.CreateUrl(ctx, createUrlParams)
 	if err != nil {
 		return dto.CreateUrlResponse{}, err
@@ -212,7 +188,6 @@ func (s *Urls) CreateUrl(ctx context.Context, req dto.CreateUrlRequest, origin s
 	return dto.CreateUrlResponse{
 		Id:       createdUrl.ID,
 		ShortUrl: createdUrl.ShortUrl,
-		Qr:       createdUrl.Qr,
 	}, nil
 }
 

@@ -54,10 +54,10 @@ func main() {
 	var swaggerUrl string
 	if cfg.IsDevelopment() {
 		docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.ServerPort)
-		swaggerUrl = "http://localhost:5051/swagger/doc.json"
+		swaggerUrl = fmt.Sprintf("http://localhost:%d/swagger/doc.json", cfg.ServerPort)
 	} else {
-		docs.SwaggerInfo.Host = "raythx.com"
-		swaggerUrl = "https://raythx.com/swagger/doc.json"
+		docs.SwaggerInfo.Host = "129.150.49.141.sslip.io"
+		swaggerUrl = "https://129.150.49.141.sslip.io/swagger/doc.json"
 	}
 	mux.HandleFunc("/swagger/", func(w http.ResponseWriter, r *http.Request) {
 		httpSwagger.Handler(httpSwagger.URL(swaggerUrl))(w, r)

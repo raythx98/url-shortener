@@ -16,8 +16,8 @@ where id = $1
   and is_active = true;
 
 -- name: CreateUrl :one
-insert into urls (user_id, title, short_url, full_url, qr)
-values ($1, $2, $3, $4, $5)
+insert into urls (user_id, title, short_url, full_url)
+values ($1, $2, $3, $4)
 returning *;
 
 -- name: DeleteUrl :exec

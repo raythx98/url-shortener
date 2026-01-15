@@ -14,7 +14,6 @@ create table if not exists urls
     title      varchar(255)                             not null,
     short_url  varchar(255) unique                      not null,
     full_url   varchar(2048)                            not null,
-    qr         varchar(255)                             not null,
     created_at timestamp default timezone('UTC', now()) not null,
     is_deleted boolean   default false                  not null,
     constraint fk_user_id foreign key (user_id) references users (id)

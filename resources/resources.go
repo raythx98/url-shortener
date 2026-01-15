@@ -8,10 +8,8 @@ import (
 	"github.com/raythx98/url-shortener/repositories"
 	"github.com/raythx98/url-shortener/service"
 	"github.com/raythx98/url-shortener/tools/config"
-	"github.com/raythx98/url-shortener/tools/qrcode"
 	"github.com/raythx98/url-shortener/tools/zerologger"
 
-	"github.com/raythx98/gohelpme/tool/aws"
 	"github.com/raythx98/gohelpme/tool/basicauth"
 	"github.com/raythx98/gohelpme/tool/crypto"
 	"github.com/raythx98/gohelpme/tool/jwthelper"
@@ -34,14 +32,7 @@ func RegisterControllers(_ context.Context, urlShortenerSvc Services, tools Tool
 }
 
 func RegisterClients(ctx context.Context, config *config.Specification) (Clients, error) {
-	awsTool, err := aws.NewConfig(ctx, config)
-	if err != nil {
-		return Clients{}, err
-	}
-
-	return Clients{
-		S3: aws.NewS3(awsTool),
-	}, nil
+	return Clients{}, nil
 }
 
 func RegisterServices(_ context.Context, config *config.Specification, repo Repositories, clients Clients,
@@ -49,7 +40,7 @@ func RegisterServices(_ context.Context, config *config.Specification, repo Repo
 	return Services{
 		auth:      service.NewAuth(repo.Repo, tools.Log, tools.Jwt, tools.Crypto),
 		redirects: service.NewRedirects(repo.Repo, tools.Log),
-		urls:      service.NewUrls(config, repo.Repo, clients.S3, tools.Log, tools.Random, tools.QrCode),
+		urls:      service.NewUrls(config, repo.Repo, tools.Log, tools.Random),
 		users:     service.NewUsers(repo.Repo, tools.Log),
 	}
 }
@@ -67,7 +58,6 @@ func CreateTools(ctx context.Context, config *config.Specification) Tools {
 	basicAuth := basicauth.New(config)
 	cryptoTool := crypto.New(crypto.DefaultConfig())
 	randomTool := random.New()
-	qrCode := qrcode.New()
 
 	return Tools{
 		Validator: validate,
@@ -77,6 +67,5 @@ func CreateTools(ctx context.Context, config *config.Specification) Tools {
 		BasicAuth: basicAuth,
 		Crypto:    cryptoTool,
 		Random:    randomTool,
-		QrCode:    qrCode,
 	}
 }

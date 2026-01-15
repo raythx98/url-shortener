@@ -9,15 +9,9 @@ packages:
     github.com/raythx98/url-shortener/service:
         interfaces:
             ConfigProvider:
-    github.com/raythx98/url-shortener/tools/aws:
-        interfaces:
-            IS3:
     github.com/raythx98/url-shortener/tools/crypto:
         interfaces:
             ICrypto:
-    github.com/raythx98/url-shortener/tools/qrcode:
-        interfaces:
-            IQrCode:
     github.com/raythx98/url-shortener/tools/random:
         interfaces:
             IRandom:

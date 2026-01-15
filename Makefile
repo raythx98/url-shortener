@@ -1,50 +1,38 @@
-create_migration:
-	migrate create -ext sql -dir migrations/url_mappings -seq init_table
+.PHONY: build run test clean create_migration sqlc swagger run_local up down logs
 
-sqlc:
-	cd sqlc
-	sqlc generate --file sqlc.yaml
-	cd ..
-
-swagger:
-	swag init --parseDependency -o ./docs -d ./cmd/api,./controller
-
-allow_direnv:
-	direnv allow . || true
+# Default migration name if not provided (make create_migration name=my_migration)
+name ?= new_migration
 
 build:
-	docker build -t url-shortener .
+	go build -o bin/server cmd/api/main.go
 
-volume:
-	docker volume create local-postgres
+run: build
+	./bin/server
 
-network:
-	docker network create my-network || true
+test:
+	go test -v ./...
 
-db:
-	docker run -d --rm --name ${APP_URLSHORTENER_DBHOST} \
-		--net my-network -p ${APP_URLSHORTENER_DBPORT}:${APP_URLSHORTENER_DBPORT} \
-		-e POSTGRES_PASSWORD=${APP_URLSHORTENER_DBPASSWORD} \
-		-v local-postgres:/var/lib/postgresql/data \
-		postgres:latest && sleep 5 || true
+clean:
+	rm -rf bin/
 
+create_migration:
+	migrate create -ext sql -dir migrations -seq $(name)
 
-format_env:
-	find .envrc && sed 's/^export //' .envrc > .env || true
+sqlc:
+	cd sqlc && sqlc generate --file sqlc.yaml
 
-migrate_up:
-	migrate -database 'postgres://${APP_URLSHORTENER_DBUSERNAME}:${APP_URLSHORTENER_DBPASSWORD}@localhost:${APP_URLSHORTENER_DBPORT}/${APP_URLSHORTENER_DBDEFAULTNAME}?sslmode=disable' -path migrations up
+swagger:
+	swag init --parseDependency --parseInternal --parseDepth 2 -o ./docs -d ./cmd/api,./controller,./dto
 
-run: allow_direnv build volume network stop db format_env migrate_up
-	docker run -d --rm --name url-shortener-app \
-		--net my-network -p ${APP_URLSHORTENER_SERVERPORT}:${APP_URLSHORTENER_SERVERPORT} \
-		--env-file .env url-shortener
+run_local: sqlc swagger
+	set -a && . .envrc && set +a && go run cmd/api/main.go
 
-stop_app:
-	docker stop url-shortener-app || true
+# Docker Compose Helpers
+up:
+	docker compose up -d
 
-stop_db:
-	docker stop url-shortener-db || true
-	sleep 5
+down:
+	docker compose down
 
-stop: stop_app stop_db
+logs:
+	docker compose logs -f

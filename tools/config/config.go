@@ -9,7 +9,7 @@ import (
 type Specification struct {
 	Stage             string `default:"development"`
 	Debug             bool   `default:"true"`
-	ServerPort        int    `default:"5051"`
+	ServerPort        int    `default:"8080"`
 	DbUsername        string `required:"true"`
 	DbPassword        string `required:"true"`
 	DbHost            string `required:"true"`
@@ -18,10 +18,6 @@ type Specification struct {
 	JwtSecret         string `required:"true"`
 	BasicAuthUsername string `required:"true"`
 	BasicAuthPassword string `required:"true"`
-	AwsS3Bucket       string `required:"true"`
-	AwsRegion         string `required:"true"`
-	AwsAccessKey      string `required:"true"`
-	AwsSecretKey      string `required:"true"`
 }
 
 func Load() *Specification {
@@ -68,20 +64,4 @@ func (s *Specification) GetDbPort() int {
 
 func (s *Specification) GetDbDefaultName() string {
 	return s.DbDefaultName
-}
-
-func (s *Specification) GetAwsS3Bucket() string {
-	return s.AwsS3Bucket
-}
-
-func (s *Specification) GetAwsRegion() string {
-	return s.AwsRegion
-}
-
-func (s *Specification) GetAwsAccessKey() string {
-	return s.AwsAccessKey
-}
-
-func (s *Specification) GetAwsSecretKey() string {
-	return s.AwsSecretKey
 }

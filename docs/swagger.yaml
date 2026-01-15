@@ -27,8 +27,6 @@ definitions:
     properties:
       id:
         type: integer
-      qr:
-        type: string
       short_url:
         type: string
     type: object
@@ -127,8 +125,6 @@ definitions:
         type: string
       id:
         type: integer
-      qr:
-        type: string
       short_url:
         type: string
       title:
