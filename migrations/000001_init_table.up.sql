@@ -12,13 +12,17 @@ create table if not exists urls
     id         bigserial primary key,
     user_id    bigint                                   null,
     title      varchar(255)                             not null,
-    short_url  varchar(255) unique                      not null,
+    short_url  varchar(255)                             not null,
     full_url   varchar(2048)                            not null,
     created_at timestamp default timezone('UTC', now()) not null,
     is_deleted boolean   default false                  not null,
     constraint fk_user_id foreign key (user_id) references users (id)
         on delete set null on update cascade
 );
+
+create unique index if not exists urls_short_url_active_unique
+    on urls (short_url)
+    where is_deleted = false;
 
 create index if not exists urls_user_id_is_deleted
     on urls (user_id, is_deleted);

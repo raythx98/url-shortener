@@ -116,8 +116,8 @@ func (s *Urls) GetUrl(ctx context.Context, urlId string) (dto.GetUrlResponse, er
 			FullUrl:   getUrl.FullUrl,
 			CreatedAt: getUrl.CreatedAt.Time,
 		},
-		Devices:     unsortedDevices[:min(5, len(unsortedDevices))],
-		Countries:   unsortedCountries[:min(5, len(unsortedDevices))],
+		Devices:     unsortedDevices,
+		Countries:   unsortedCountries,
 		TotalClicks: len(redirects),
 	}, nil
 }
