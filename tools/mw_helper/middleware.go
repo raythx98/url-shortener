@@ -44,7 +44,14 @@ func GetMiddlewares(tools resources.Tools) Template {
 		middleware.AddRequestId,
 		middleware.ReqCtx,
 		middleware.JwtSubject(tools.Jwt),
-		middleware.Log(tools.Log),
+		middleware.Log(tools.Log, middleware.LogConfig{
+			RedactedPaths: []string{
+				"request.body.password",
+				"request.headers.Authorization",
+				"response.body.access_token",
+				"response.body.refresh_token",
+			},
+		}),
 		rateLimiter.RateLimit,
 		middleware.Recoverer(),
 		middleware.ErrorHandler,
