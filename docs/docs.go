@@ -11,7 +11,7 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "contact": {
             "name": "Ray Toh",
-            "url": "https://www.raythx.com",
+            "url": "https://raythx98.github.io/me/",
             "email": "raythx98@gmail.com"
         },
         "version": "{{.Version}}"
@@ -538,8 +538,7 @@ const docTemplate = `{
         "dto.CreateUrlRequest": {
             "type": "object",
             "required": [
-                "full_url",
-                "title"
+                "full_url"
             ],
             "properties": {
                 "custom_url": {

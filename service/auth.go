@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/raythx98/url-shortener/dto"
-	"github.com/raythx98/url-shortener/repositories"
-	"github.com/raythx98/url-shortener/sqlc/db"
-	"github.com/raythx98/url-shortener/tools/crypto"
+	"github.com/raythx98/go-zap/dto"
+	"github.com/raythx98/go-zap/repositories"
+	"github.com/raythx98/go-zap/sqlc/db"
+	"github.com/raythx98/go-zap/tools/crypto"
 
 	"github.com/raythx98/gohelpme/errorhelper"
 	"github.com/raythx98/gohelpme/tool/jwthelper"

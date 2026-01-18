@@ -4,7 +4,7 @@
         "title": "URL Shortener Server",
         "contact": {
             "name": "Ray Toh",
-            "url": "https://www.raythx.com",
+            "url": "https://raythx98.github.io/me/",
             "email": "raythx98@gmail.com"
         },
         "version": "1.0"
@@ -531,8 +531,7 @@
         "dto.CreateUrlRequest": {
             "type": "object",
             "required": [
-                "full_url",
-                "title"
+                "full_url"
             ],
             "properties": {
                 "custom_url": {

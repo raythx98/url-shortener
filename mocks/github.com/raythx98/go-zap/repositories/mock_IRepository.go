@@ -5,7 +5,7 @@ package repositories
 import (
 	context "context"
 
-	db "github.com/raythx98/url-shortener/sqlc/db"
+	db "github.com/raythx98/go-zap/sqlc/db"
 	mock "github.com/stretchr/testify/mock"
 )
 

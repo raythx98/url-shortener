@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/raythx98/url-shortener/sqlc/db"
-	"github.com/raythx98/url-shortener/tools/pghelper"
-	"github.com/raythx98/url-shortener/tools/postgres"
+	"github.com/raythx98/go-zap/sqlc/db"
+	"github.com/raythx98/go-zap/tools/pghelper"
+	"github.com/raythx98/go-zap/tools/postgres"
 
 	"github.com/jackc/pgx/v5"
 )

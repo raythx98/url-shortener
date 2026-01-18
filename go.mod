@@ -1,4 +1,4 @@
-module github.com/raythx98/url-shortener
+module github.com/raythx98/go-zap
 
 go 1.24.11
 

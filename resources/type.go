@@ -1,12 +1,12 @@
 package resources
 
 import (
-	"github.com/raythx98/url-shortener/controller"
-	"github.com/raythx98/url-shortener/repositories"
-	"github.com/raythx98/url-shortener/service"
-	"github.com/raythx98/url-shortener/tools/crypto"
-	"github.com/raythx98/url-shortener/tools/postgres"
-	"github.com/raythx98/url-shortener/tools/random"
+	"github.com/raythx98/go-zap/controller"
+	"github.com/raythx98/go-zap/repositories"
+	"github.com/raythx98/go-zap/service"
+	"github.com/raythx98/go-zap/tools/crypto"
+	"github.com/raythx98/go-zap/tools/postgres"
+	"github.com/raythx98/go-zap/tools/random"
 
 	"github.com/raythx98/gohelpme/tool/basicauth"
 	"github.com/raythx98/gohelpme/tool/jwthelper"

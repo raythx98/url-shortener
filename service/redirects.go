@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/raythx98/url-shortener/dto"
-	"github.com/raythx98/url-shortener/repositories"
-	"github.com/raythx98/url-shortener/sqlc/db"
-	"github.com/raythx98/url-shortener/tools/pghelper"
+	"github.com/raythx98/go-zap/dto"
+	"github.com/raythx98/go-zap/repositories"
+	"github.com/raythx98/go-zap/sqlc/db"
+	"github.com/raythx98/go-zap/tools/pghelper"
 
 	"github.com/raythx98/gohelpme/errorhelper"
 	"github.com/raythx98/gohelpme/tool/logger"

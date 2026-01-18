@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/raythx98/url-shortener/resources"
+	"github.com/raythx98/go-zap/resources"
 
 	"github.com/raythx98/gohelpme/middleware"
 	"github.com/raythx98/gohelpme/tool/logger"

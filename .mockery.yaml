@@ -3,15 +3,15 @@ issue-845-fix: true
 disable-version-string: true
 resolve-type-alias: false
 packages:
-    github.com/raythx98/url-shortener/repositories:
+    github.com/raythx98/go-zap/repositories:
         interfaces:
             IRepository:
-    github.com/raythx98/url-shortener/service:
+    github.com/raythx98/go-zap/service:
         interfaces:
             ConfigProvider:
-    github.com/raythx98/url-shortener/tools/crypto:
+    github.com/raythx98/go-zap/tools/crypto:
         interfaces:
             ICrypto:
-    github.com/raythx98/url-shortener/tools/random:
+    github.com/raythx98/go-zap/tools/random:
         interfaces:
             IRandom:

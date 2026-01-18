@@ -21,7 +21,6 @@ definitions:
         type: string
     required:
     - full_url
-    - title
     type: object
   dto.CreateUrlResponse:
     properties:
@@ -134,7 +133,7 @@ info:
   contact:
     email: raythx98@gmail.com
     name: Ray Toh
-    url: https://www.raythx.com
+    url: https://raythx98.github.io/me/
   title: URL Shortener Server
   version: "1.0"
 paths:

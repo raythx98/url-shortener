@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/raythx98/url-shortener/dto"
-	"github.com/raythx98/url-shortener/service"
+	"github.com/raythx98/go-zap/dto"
+	"github.com/raythx98/go-zap/service"
 
 	"github.com/raythx98/gohelpme/tool/httphelper"
 	"github.com/raythx98/gohelpme/tool/logger"

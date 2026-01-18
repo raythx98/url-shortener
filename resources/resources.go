@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/raythx98/url-shortener/controller"
-	"github.com/raythx98/url-shortener/repositories"
-	"github.com/raythx98/url-shortener/service"
-	"github.com/raythx98/url-shortener/tools/config"
-	"github.com/raythx98/url-shortener/tools/zerologger"
+	"github.com/raythx98/go-zap/controller"
+	"github.com/raythx98/go-zap/repositories"
+	"github.com/raythx98/go-zap/service"
+	"github.com/raythx98/go-zap/tools/config"
+	"github.com/raythx98/go-zap/tools/zerologger"
 
 	"github.com/raythx98/gohelpme/tool/basicauth"
 	"github.com/raythx98/gohelpme/tool/crypto"

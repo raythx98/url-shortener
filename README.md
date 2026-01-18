@@ -1,4 +1,4 @@
-# url-shortener
+# go-zap
 
 ## Tech Stack
 

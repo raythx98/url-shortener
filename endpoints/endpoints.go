@@ -3,8 +3,8 @@ package endpoints
 import (
 	"net/http"
 
-	"github.com/raythx98/url-shortener/resources"
-	"github.com/raythx98/url-shortener/tools/mw_helper"
+	"github.com/raythx98/go-zap/resources"
+	"github.com/raythx98/go-zap/tools/mw_helper"
 
 	"github.com/raythx98/gohelpme/middleware"
 )

@@ -9,21 +9,21 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/raythx98/url-shortener/docs"
-	"github.com/raythx98/url-shortener/endpoints"
-	"github.com/raythx98/url-shortener/resources"
-	"github.com/raythx98/url-shortener/tools/config"
+	"github.com/raythx98/go-zap/docs"
+	"github.com/raythx98/go-zap/endpoints"
+	"github.com/raythx98/go-zap/resources"
+	"github.com/raythx98/go-zap/tools/config"
 
 	"github.com/raythx98/gohelpme/tool/logger"
 
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-// @title           URL Shortener Server
+// @title           Zap Server
 // @version         1.0
 
 // @contact.name   Ray Toh
-// @contact.url    https://www.raythx.com
+// @contact.url    https://raythx98.github.io/me/
 // @contact.email  raythx98@gmail.com
 
 // @host      raythx.com
